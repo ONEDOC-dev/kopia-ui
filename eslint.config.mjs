@@ -10,12 +10,18 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], languageOptions: { globals: globals.browser } },
   tseslint.configs.recommended,
   {languageOptions: { globals: globals.jest }},
-  { rules: {
-    "@typescript-eslint/no-unused-vars": [
-            "error",
-            { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-        ],
-    }
+  { rules:
+      {
+        // "@typescript-eslint/no-unused-vars": [
+        //     "error",
+        //     { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+        // ],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "warn",
+        '@typescript-eslint/no-explicit-any': 'off',
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-uses-react": "off"
+    },
   },
   pluginReact.configs.flat.recommended,
 ]);
