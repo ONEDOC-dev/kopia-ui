@@ -1,8 +1,8 @@
 import { KeycloakConfig } from "../ipc/types";
 
 export const keycloakConfig: KeycloakConfig = {
-  realm: 'dcm4che',
+  realm: 'one_cloud',
   authServerUrl: 'https://auth.onedoc.kr',
-  clientId: 'pacs-electron-app',
+  clientId: 'oneCloud-client',
   redirectUri: 'onepacs://auth_redirect'
 };

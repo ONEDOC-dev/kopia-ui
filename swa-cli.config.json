@@ -1,0 +1,13 @@
+{
+  "configurations": {
+    "kopia-ui": {
+      "appLocation": ".",
+      "outputLocation": "build",
+      "appBuildCommand": "npm run build",
+      "run": "npm run dev",
+      "appDevserverUrl": "http://localhost:5173",
+      "appName": "kopia-ui",
+      "resourceGroup": "kopia-ui-rg"
+    }
+  }
+}
