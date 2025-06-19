@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import instance from "@/api/v1/index";
+import instance from "@/api/httpClient";
 import {TasksResponse} from "@/types/apis/tasksType";
 
 const useTasks = () => {

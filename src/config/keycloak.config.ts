@@ -2,12 +2,12 @@ import Keycloak from "keycloak-js";
 import {AuthClientInitOptions} from "@react-keycloak/core/lib/types";
 
 const isElectron = window.electron !== undefined;
-const clientId = isElectron ? 'pacs-electron-app' : 'pacs-web-app';
+const clientId = 'oneCloud-client';
 
 
 export const keycloak = new Keycloak({
   url: 'https://auth.onedoc.kr',
-  realm: 'dcm4che',
+  realm: 'one_cloud',
   clientId: clientId,
 });
 

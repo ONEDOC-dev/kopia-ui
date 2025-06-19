@@ -1,4 +1,4 @@
-import instance from "@/api/v1/index";
+import instance from "@/api/httpClient";
 import {useCallback} from "react";
 import {UpdatePolicyReqeust} from "@/types/apis/policyType";
 

@@ -3,3 +3,8 @@ coverage/
 .idea/
 
 .env
+
+# build
+.vite/
+build/
+package-lock.json

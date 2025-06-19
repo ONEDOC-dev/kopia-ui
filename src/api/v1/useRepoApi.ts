@@ -1,4 +1,4 @@
-import instance from "./index";
+import instance from "@/api/httpClient";
 import {useCallback} from "react";
 import {
   connectRepositoryRequest,

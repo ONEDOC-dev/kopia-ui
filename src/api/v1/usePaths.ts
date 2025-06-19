@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import instance from "@/api/v1/index";
+import instance from "@/api/httpClient";
 import {pathsResolveRequest, pathsResolveResponse} from "@/types/apis/pathsTypes";
 
 const usePaths = () => {
