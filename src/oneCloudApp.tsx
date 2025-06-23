@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {AuthClientError, AuthClientEvent, AuthClientInitOptions} from "@react-keycloak/core/lib/types";
+// import {AuthClientError, AuthClientEvent, AuthClientInitOptions} from "@react-keycloak/core/lib/types";
 
-import {keycloak, initKeycloak as initKeycloakConfig} from "./config/keycloak.config";
-import {ReactKeycloakProvider} from "@react-keycloak/web";
-import {useElectronAuth} from "./hooks/useElectronAuth";
+// import {keycloak, initKeycloak as initKeycloakConfig} from "./config/keycloak.config";
+// import {ReactKeycloakProvider} from "@react-keycloak/web";
+// import {useElectronAuth} from "./hooks/useElectronAuth";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
 import DefaultLayout from "@/layouts/DefaultLayout";
@@ -20,8 +20,8 @@ import History from "@/pages/history/History";
 import {ContextAlertProvider} from '@/contexts/ContextAlert';
 
 const App = () => {
-  const { isElectron } = useElectronAuth();
-  const [initKeycloak] = useState<AuthClientInitOptions>(initKeycloakConfig);
+  // const { isElectron } = useElectronAuth();
+  // const [initKeycloak] = useState<AuthClientInitOptions>(initKeycloakConfig);
   const $useTokenStore = useTokenStore();
   const {getRepositoryStatus} = useRepoApi();
   const {setRepositoryStatus} = useRepositoryStatusStore();
@@ -46,22 +46,22 @@ const App = () => {
     }
   };
 
-  const handleKeycloakEvent = (type: AuthClientEvent, _error?: AuthClientError) => {
-    if (!isElectron) return;
-    switch (type) {
-      case "onAuthLogout":
-        keycloak.logout({redirectUri: 'onepacs://auth_logout_redirect'});
-        alert("Session expired.");
-        return;
-    }
-  }
+  // const handleKeycloakEvent = (type: AuthClientEvent, _error?: AuthClientError) => {
+  //   if (!isElectron) return;
+  //   switch (type) {
+  //     case "onAuthLogout":
+  //       keycloak.logout({redirectUri: 'onepacs://auth_logout_redirect'});
+  //       alert("Session expired.");
+  //       return;
+  //   }
+  // }
 
   return (
-    <ReactKeycloakProvider
-      authClient={keycloak}
-      initOptions={initKeycloak}
-      onEvent={handleKeycloakEvent}
-    >
+    // <ReactKeycloakProvider
+    //   authClient={keycloak}
+    //   initOptions={initKeycloak}
+    //   onEvent={handleKeycloakEvent}
+    // >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <ContextAlertProvider>
           <Router>
@@ -77,7 +77,7 @@ const App = () => {
           </Router>
         </ContextAlertProvider>
       </LocalizationProvider>
-    </ReactKeycloakProvider>
+    // </ReactKeycloakProvider>
   )
 }
 

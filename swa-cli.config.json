@@ -6,8 +6,8 @@
       "appBuildCommand": "npm run build",
       "run": "npm run dev",
       "appDevserverUrl": "http://localhost:5173",
-      "appName": "kopia-ui",
-      "resourceGroup": "kopia-ui-rg"
+      "appName": "one-cloud",
+      "resourceGroup": "onedoc-onecloud-rg"
     }
   }
 }

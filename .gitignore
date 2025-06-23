@@ -8,3 +8,7 @@ coverage/
 .vite/
 build/
 package-lock.json
+out/
+dist/
+
+.DS_Store

@@ -23,9 +23,9 @@ export interface SafeAxiosRequest {
 }
 
 export interface PreloadElectronAPI {
-  // authStart: () => Promise<TokenResponse>;
-  // onAuthError: (callback: (error: string) => void) => void;
-  // onAuthSuccess: (callback: (tokenResponse: TokenResponse) => void) => void;
+  authStart: () => Promise<TokenResponse>;
+  onAuthError: (callback: (error: string) => void) => void;
+  onAuthSuccess: (callback: (tokenResponse: TokenResponse) => void) => void;
   apiRequest: (config: AxiosRequestConfig) => Promise<any>;
 }
 

@@ -2,7 +2,8 @@
   "appId": "com.onedoc.onecloud",
   "productName": "oneCLOUD",
   "files": [
-    "output/electron/**/*",
+    ".vite/build/**/*",
+    "resources/**/*",
     "package.json"
   ],
   "extraResources": [
@@ -14,16 +15,30 @@
       ]
     }
   ],
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "arrifactName": "$productName-$version.exe"
+  },
+  "win": {
+    "target": [
+      "nsis",
+      "zip"
+    ],
+    "signtoolOptions": {
+      "sign": "./sign.mjs",
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
+    }
+  },
   "mac": {
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "category": "public.app-category.utilities",
     "target": [
       {
-        "target": "dmg",
-        "arch": [
-          "arm64"
-        ]
-      },
-      {
-        "target": "zip",
+        "target": "dir",
         "arch": [
           "arm64"
         ]
