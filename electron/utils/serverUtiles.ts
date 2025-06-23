@@ -41,29 +41,11 @@ export const defaultServerBinary = () => {
         return binaries[osShortName as 'win' | 'mac' | 'linux'];
     }
 
-    // 패키지된 앱에서 여러 경로 시도
-    const possiblePaths = [
-        path.join(process.resourcesPath, 'win', 'kopia.exe'),
-        path.join(process.resourcesPath, 'resources', 'win', 'kopia.exe'),
-        path.join(path.dirname(process.execPath), 'resources', 'win', 'kopia.exe'),
-        path.join(path.dirname(process.execPath), 'win', 'kopia.exe'),
-    ];
-
-    // 디버깅: 모든 경로 확인
-    console.log('Searching for kopia.exe in:');
-    console.log('process.resourcesPath:', process.resourcesPath);
-    console.log('process.execPath:', process.execPath);
-    
-    const fs = require('fs');
-    for (const testPath of possiblePaths) {
-        console.log('Checking path:', testPath);
-        if (fs.existsSync(testPath)) {
-            console.log('Found kopia.exe at:', testPath);
-            return testPath;
-        }
-    }
-
-    // 기본 경로들이 모두 실패하면 에러 발생
-    throw new Error(`kopia.exe not found. Searched paths:\n${possiblePaths.join('\n')}`);
+    const binaries = {
+        mac: path.join(process.resourcesPath, 'resources', 'mac', 'kopia'),
+        win: path.join(process.resourcesPath, 'resources', 'win', 'kopia.exe'),
+        linux: path.join(process.resourcesPath, 'resources', 'linux', 'kopia'),
+    };
+    return binaries[osShortName as 'win' | 'mac' | 'linux'];
 }
 
