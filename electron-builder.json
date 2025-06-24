@@ -18,19 +18,13 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "arrifactName": "$productName-$version.exe"
+    "artifactName": "$productName-$version.exe"
   },
   "win": {
     "target": [
       "nsis",
       "zip"
-    ],
-    "signtoolOptions": {
-      "sign": "./sign.mjs",
-      "signingHashAlgorithms": [
-        "sha256"
-      ]
-    }
+    ]
   },
   "mac": {
     "hardenedRuntime": false,
