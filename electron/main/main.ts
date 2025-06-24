@@ -224,11 +224,11 @@ app.on('ready', () => {
   log.transports.file.level = "debug";
 
   refreshWillLaunchAtStartup();
-
+  
+  showMainWindow(); 
   // 단일 repository 서버 실행
   serverForRepo('repository').actuateServer();
 
-  showMainWindow();
 
   if (isOutsideOfApplicationsFolderOnMac()) {
     setTimeout(maybeMoveToApplicationsFolder, 1000);
