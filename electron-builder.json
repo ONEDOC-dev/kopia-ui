@@ -1,11 +1,8 @@
 {
   "appId": "com.onedoc.onecloud",
   "productName": "oneCLOUD",
-  "directories": {
-    "output": "release"
-  },
   "files": [
-    "dist/**/*",
+    ".vite/build/**/*",
     "resources/**/*",
     "package.json"
   ],
@@ -21,18 +18,19 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "artifactName": "${productName}-${version}.exe",
-    "deleteAppDataOnUninstall": true
+    "arrifactName": "$productName-$version.exe"
   },
   "win": {
     "target": [
-      {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      }
-    ]
+      "nsis",
+      "zip"
+    ],
+    "signtoolOptions": {
+      "sign": "./sign.mjs",
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
+    }
   },
   "mac": {
     "hardenedRuntime": false,
@@ -40,9 +38,9 @@
     "category": "public.app-category.utilities",
     "target": [
       {
-        "target": "dmg",
+        "target": "dir",
         "arch": [
-          "universal"
+          "arm64"
         ]
       }
     ]

@@ -10,6 +10,5 @@ build/
 package-lock.json
 out/
 dist/
-release/
 
 .DS_Store
