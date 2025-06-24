@@ -2,10 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron';
 import path from 'path';;
 import {IpcHandler} from '../ipc/ipc';
 import Store from 'electron-store';
-import { WindowManager } from './WindowManager';
-import { isPortableConfig, configDir, deleteConfigIfDisconnected, allConfigs, loadConfigs, isFirstRun } from '../config/serverConfig';
-import crypto from "crypto";
-import { publicPath } from "../utils/serverUtiles";
+import { isPortableConfig, configDir, loadConfigs, isFirstRun } from '../config/serverConfig';
 import log from "electron-log";
 import { serverForRepo } from './kopia-server';
 import { refreshWillLaunchAtStartup } from './auto-luanch';
@@ -24,30 +21,7 @@ if (isPortableConfig()) {
   app.setPath("userData", path.join(configDir(), "cache"));
 }
 
-const getDisplayConfiguration = () => {
-  // Stores the IDs all all currently connected displays
-  let config = [];
-  let sha256 = crypto.createHash("sha256");
-  // Get all displays
-  let displays = screen.getAllDisplays();
-  let isFactorEqual = false;
-  // Stores the previous factor - initialized with the primary scaling factor
-  let prevFactor = screen.getPrimaryDisplay().scaleFactor;
-  //Workaround until https://github.com/electron/electron/issues/10862 is fixed
-  for (let dsp in displays) {
-    // Add the id to the config
-    config.push(displays[dsp].id);
-    isFactorEqual = prevFactor === displays[dsp].scaleFactor;
-    // Update the previous factors
-    prevFactor = displays[dsp].scaleFactor;
-  }
-  // Sort IDs to prevent different hashes through permutation
-  config.sort();
-  sha256.update(config.toString());
-  return { hash: sha256.digest("hex"), factorsEqual: isFactorEqual };
-}
-
-function showMainWindow() {
+const showMainWindow = () => {
   if (mainWindow) {
     mainWindow.focus();
     return;
@@ -68,33 +42,9 @@ function showMainWindow() {
     },
   };
 
-  let configuration = getDisplayConfiguration();
-  let winBounds = store.get(configuration.hash);
-  let maximized = store.get("maximized");
-
-  if (configuration.factorsEqual) {
-    Object.assign(windowOptions, winBounds);
-  }
-
   mainWindow = new BrowserWindow(windowOptions);
-  if (maximized) {
-    mainWindow.maximize();
-  }
-
-  mainWindow.webContents.on("did-fail-load", () => {
-    log.error("failed to load content");
-    setTimeout(() => {
-      log.info("reloading");
-      mainWindow?.loadURL('https://gray-rock-0471a3b10.1.azurestaticapps.net');
-    }, 500);
-  });
 
   mainWindow.loadURL('https://gray-rock-0471a3b10.1.azurestaticapps.net');
-
-  mainWindow.on("close", function () {
-    store.set(getDisplayConfiguration().hash, mainWindow?.getBounds());
-    store.set("maximized", mainWindow?.isMaximized());
-  });
 
   mainWindow.once("ready-to-show", function () {
     mainWindow?.show();
@@ -102,7 +52,7 @@ function showMainWindow() {
 
   mainWindow.on("closed", function () {
     mainWindow = null;
-    // 단일 repository 서버 중지 등 필요시 여기에 추가
+    serverForRepo().stopServer();
   });
 }
 
@@ -120,41 +70,14 @@ if (!app.requestSingleInstanceLock()) {
   });
 }
 
+app.on("window-all-closed", function () {
+  app.quit();
+});
+
 app.on("will-quit", function () {
-  // 단일 repository 서버 중지 등 필요시 여기에 추가
+  console.log("will-quit 이벤트 발생!");
+  serverForRepo().stopServer();
 });
-
-app.on("login", (event, webContents, _request, _authInfo, callback) => {
-  // 단일 repository 기준으로 서버 패스워드 처리
-  const password = serverForRepo('repository').getServerPassword();
-  if (password) {
-    event.preventDefault();
-    log.info("automatically logging in...");
-    callback("kopia", password);
-  }
-});
-
-app.on(
-  "certificate-error",
-  (event, webContents, _url, _error, certificate, callback) => {
-    // 단일 repository 기준으로 인증서 처리
-    const expected =
-      "sha256/" +
-      Buffer.from(
-        serverForRepo('repository').getServerCertSHA256(),
-        "hex",
-      ).toString("base64");
-    if (certificate.fingerprint === expected) {
-      log.debug("accepting server certificate.");
-      event.preventDefault();
-      callback(true);
-      return;
-    }
-    log.warn("certificate error:", certificate.fingerprint, expected);
-  },
-);
-
-app.on("window-all-closed", function () {});
 
 ipcMain.handle("select-dir", async (_event, _arg) => {
   const result = await dialog.showOpenDialog({
@@ -172,6 +95,7 @@ ipcMain.handle("browse-dir", async (_event, path) => {
   shell.openPath(path);
 });
 
+// mac에서 앱이 어플레케이션에 등록이 안되어 있을 경우
 const isOutsideOfApplicationsFolderOnMac = () => {
   if (!app.isPackaged || isPortableConfig()) {
     return false;
@@ -209,7 +133,7 @@ const maybeMoveToApplicationsFolder = () => {
 }
 
 app.on('ready', () => {
-  const handler = new IpcHandler(store, new WindowManager(store));
+  const handler = new IpcHandler();
   handler.setupIPC();
   loadConfigs();
 
@@ -219,7 +143,6 @@ app.on('ready', () => {
       path.join(logDir, variables.fileName);
   }
   
-
   log.transports.console.level = "warn";
   log.transports.file.level = "debug";
 
@@ -227,42 +150,10 @@ app.on('ready', () => {
   
   showMainWindow(); 
   // 단일 repository 서버 실행
-  serverForRepo('repository').actuateServer();
+  serverForRepo().actuateServer();
 
 
   if (isOutsideOfApplicationsFolderOnMac()) {
     setTimeout(maybeMoveToApplicationsFolder, 1000);
   }
 });
-
-// const createWindow = () => {
-//   const win = new BrowserWindow({
-//     width: 800,
-//     height: 600,
-//     webPreferences: {
-//       webSecurity: false,              // CORS 무시
-//       contextIsolation: true,         // 이게 true면 preload + contextBridge 필요
-//       nodeIntegration: true,           // 렌더러에서 Node.js 사용 가능
-//       preload: path.join(__dirname, 'preload.js')
-//     }
-//   });
-//   win.loadURL('https://polite-stone-0c57c411e.6.azurestaticapps.net');
-// }
-
-// app.whenReady().then(() => {
-//   const handler = new IpcHandler(store, new WindowManager(store));
-//   handler.setupIPC();
-//   createWindow();
-
-//   app.on('activate', () => {
-//     if (BrowserWindow.getAllWindows().length === 0) {
-//       createWindow();
-//     }
-//   });
-// });
-
-// app.on('window-all-closed', () => {
-//   if (process.platform !== 'darwin') {
-//     app.quit();
-//   }
-// });

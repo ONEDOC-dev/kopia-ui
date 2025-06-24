@@ -52,7 +52,7 @@ const globalConfigDir = () => {
             isPortable = true;
         });
         if (!myConfigDir) {
-            myConfigDir = path.join(Electron.app.getPath("appData"), "kopia");
+            myConfigDir = path.join(Electron.app.getPath("appData"), "oneCLOUD");
         }
     }
     return myConfigDir;

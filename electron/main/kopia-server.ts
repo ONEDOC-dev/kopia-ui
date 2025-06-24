@@ -8,7 +8,8 @@ import { configDir, isPortableConfig } from "../config/serverConfig";
 
 let servers: { [key: string]: any } = {};
 
-const kopiaServer = (repoID: string) => {
+export const kopiaServer = () => {
+  const repoID = "oneCLOUD-server";
   let runningServerProcess: any = null;
   let runningServerCertSHA256 = "";
   let runningServerPassword = "";
@@ -24,7 +25,7 @@ const kopiaServer = (repoID: string) => {
 
   return {
     actuateServer() {
-      console.log("actuating Server", repoID);
+      console.log("actuating Server");
       this.stopServer();
       this.startServer();
     },
@@ -51,7 +52,7 @@ const kopiaServer = (repoID: string) => {
         // "--address=127.0.0.1:0",
       )
 
-      args.push("--config-file", path.resolve(configDir(), repoID + ".config"));
+      args.push("--config-file", path.resolve(configDir(), `${repoID}.config`));
       if (isPortableConfig()) {
         const cacheDir = path.resolve(configDir(), "cache", repoID);
         const logsDir = path.resolve(configDir(), "logs", repoID);
@@ -59,10 +60,10 @@ const kopiaServer = (repoID: string) => {
         args.push("--log-dir", logsDir);
       }
 
-      console.log(`========== 코피아 서버 시작 중 (${repoID}) ==========`);
-      console.log(`실행 명령: ${kopiaPath} ${args.join(" ")}`);
-      console.log(`config 파일: ${path.resolve(configDir(), repoID + ".config")}`);
-      console.log(`========================================`);
+      console.log(`========== Kopia server start ==========`);
+      console.log(`Command: ${kopiaPath} ${args.join(" ")}`);
+      console.log(`Config file: ${path.resolve(configDir(), repoID + ".config")}`);
+      console.log(`=====================================`);
       
       runningServerProcess = spawn(kopiaPath, args, {});
       this.raiseStatusUpdatedEvent();
@@ -139,11 +140,11 @@ const kopiaServer = (repoID: string) => {
         if (runningServerProcess === p) {
           clearInterval(statusPollInterval);
 
-          console.log(`========== 코피아 서버 종료 (${repoID}) ==========`);
-          console.log(`종료 코드: ${code}`);
-          console.log(`종료 시그널: ${signal}`);
-          console.log(`이전 서버 주소: ${runningServerAddress || "없음"}`);
-          console.log(`========================================`);
+          console.log(`========== Kopia server stop ==========`);
+          console.log(`Termination code: ${code}`);
+          console.log(`Termination signal: ${signal}`);
+          console.log(`Previous server address: ${runningServerAddress || "없음"}`);
+          console.log(`=======================================`);
 
           runningServerAddress = "";
           runningServerPassword = "";
@@ -277,59 +278,42 @@ const kopiaServer = (repoID: string) => {
       ipcMain.emit("repo-notification-event", args);
     },
     logServerInfo() {
-      if (runningServerAddress && runningServerPassword) {
-        try {
-          const url = new URL(runningServerAddress);
-          const serverInfo = {
-            repoID: repoID,
-            address: runningServerAddress,
-            host: url.hostname,
-            port: url.port,
-            protocol: url.protocol,
-            status: this.getServerStatus(),
-            hasPassword: !!runningServerPassword,
-            hasCertificate: !!runningServerCertificate,
-            certSHA256: runningServerCertSHA256
-          };
-          
-          console.log(`========== 코피아 서버 실행 정보 (${repoID}) ==========`);
-          console.log(`서버 주소: ${serverInfo.address}`);
-          console.log(`호스트: ${serverInfo.host}`);
-          console.log(`포트: ${serverInfo.port}`);
-          console.log(`프로토콜: ${serverInfo.protocol.replace(':', '')}`);
-          console.log(`상태: ${serverInfo.status}`);
-          console.log(`runningServerControlPassword: ${runningServerControlPassword}`);          
-          console.log(`패스워드 설정: ${serverInfo.hasPassword ? '예' : '아니오'}`);
-          console.log(`인증서 설정: ${serverInfo.hasCertificate ? '예' : '아니오'}`);
-          if (serverInfo.certSHA256) {
-            console.log(`인증서 SHA256: ${serverInfo.certSHA256}`);
-          }
-          console.log(`=============================================`);
-          
-        } catch (error) {
-          console.log("서버 주소 파싱 중 오류 발생:", error);
-          console.log(`서버 주소: ${runningServerAddress}`);
+      try {
+        const url = new URL(runningServerAddress);
+        const serverInfo = {
+          repoID: repoID,
+          address: runningServerAddress,
+          host: url.hostname,
+          port: url.port,
+          protocol: url.protocol,
+          status: this.getServerStatus(),
+          hasPassword: !!runningServerPassword,
+          hasCertificate: !!runningServerCertificate,
+          certSHA256: runningServerCertSHA256
+        };
+        
+        console.log(`========== Kopia server info ==========`);
+        console.log(`Server address: ${serverInfo.address}`);
+        console.log(`Host: ${serverInfo.host}`);
+        console.log(`Port: ${serverInfo.port}`);
+        console.log(`Protocol: ${serverInfo.protocol.replace(':', '')}`);
+        console.log(`Status: ${serverInfo.status}`);
+        console.log(`runningServerControlPassword: ${runningServerControlPassword}`);          
+        console.log(`Password: ${serverInfo.hasPassword ? '예' : '아니오'}`);
+        console.log(`Certificate setting: ${serverInfo.hasCertificate ? '예' : '아니오'}`);
+        if (serverInfo.certSHA256) {
+          console.log(`Certificate SHA256: ${serverInfo.certSHA256}`);
         }
+        console.log(`=============================================`);
+        
+      } catch (error) {
+        console.log("Error parsing server address:", error);
+        console.log(`Server address: ${runningServerAddress}`);
       }
     },
   }
 }
 
-ipcMain.on("status-fetch", (event, args) => {
-  const repoID = args.repoID;
-  const s = servers[repoID];
-  if (s) {
-    s.raiseStatusUpdatedEvent();
-  }
-});
-
-export function serverForRepo(repoID: string) {
-  let s = servers[repoID];
-  if (s) {
-    return s;
-  }
-
-  s = kopiaServer(repoID);
-  servers[repoID] = s;
-  return s;
+export function serverForRepo() {
+  return kopiaServer();
 }
