@@ -8,13 +8,13 @@ import axios, {AxiosError, AxiosRequestConfig} from "axios";
 // import {getServerAddress} from "../main/kopia-server";
 
 export class IpcHandler implements IpcElectronAPI {
-  // private store: Store;
-  // private windowManager: WindowManager;
+  private store: Store;
+  private windowManager: WindowManager;
 
-  // constructor(store: Store, windowManager: WindowManager) {
-  //   this.store = store;
-  //   this.windowManager = windowManager;
-  // }
+  constructor(store: Store, windowManager: WindowManager) {
+    this.store = store;
+    this.windowManager = windowManager;
+  }
 
   public setupIPC(): void {
     // ipcMain.handle('get-auth-tokens', this.getAuthTokens.bind(this));

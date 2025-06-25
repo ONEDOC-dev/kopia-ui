@@ -1,159 +1,174 @@
-import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron';
-import path from 'path';;
-import {IpcHandler} from '../ipc/ipc';
+import { app, BrowserWindow, Display, globalShortcut, screen } from 'electron';
 import Store from 'electron-store';
-import { isPortableConfig, configDir, loadConfigs, isFirstRun } from '../config/serverConfig';
-import log from "electron-log";
+import path from 'path';
+import { DEFAULT_WINDOW_NAME } from '../ipc/const';
+import { IpcHandler } from '../ipc/ipc';
+import { WindowManager } from './WindowManager';
 import { serverForRepo } from './kopia-server';
-import { refreshWillLaunchAtStartup } from './auto-luanch';
 
-const store: Store = new Store();
-app.name = 'oneCLOUD';
-
-let mainWindow: BrowserWindow | null = null;
-
-if (process.env.KOPIA_CUSTOM_APPDATA) {
-  app.setPath("appData", process.env.KOPIA_CUSTOM_APPDATA);
+interface WindowState {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  isFullScreen: boolean;
+  displayId: number;
 }
 
-if (isPortableConfig()) {
-  // in portable mode, write cache under 'repositories'
-  app.setPath("userData", path.join(configDir(), "cache"));
-}
+class ElectronApp {
+  private readonly MAIN_WINDOW_TITLE = `oneCLOUD ${app.getVersion()}`;
+  private readonly MAIN_WINDOW_URL = `https://gray-rock-0471a3b10.1.azurestaticapps.net`;
+  private readonly store: Store;
+  private mainWindow!: BrowserWindow;
+  private authWindow: BrowserWindow | null = null;
+  private readonly windowManager: WindowManager;
+  private disabledReloadWindowId: Set<number> = new Set();
 
-const showMainWindow = () => {
-  if (mainWindow) {
-    mainWindow.focus();
-    return;
+  constructor () {
+    this.store = new Store();
+    this.windowManager = new WindowManager(this.store);
   }
 
-  let primaryScreenBounds = screen.getPrimaryDisplay().bounds;
-  let windowOptions = {
-    title: "oneCLOUD is Loading...",
-    width: 1000,
-    height: 700,
-    x: (primaryScreenBounds.width - 1000) / 2,
-    y: (primaryScreenBounds.height - 700) / 2,
-    autoHideMenuBar: true,
-    resizable: true,
-    show: false,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-    },
-  };
+  public async init() {
+    app.commandLine.appendSwitch('enable-features','SharedArrayBuffer');
 
-  mainWindow = new BrowserWindow(windowOptions);
+    await app.whenReady();
+    
+    const handler = new IpcHandler(this.store, this.windowManager);
+    handler.setupIPC();
 
-  mainWindow.loadURL('https://gray-rock-0471a3b10.1.azurestaticapps.net');
+    serverForRepo().actuateServer();
+    this.createWindows();
+    this.createAuthWindow();
+    this.setupAppInfo();
+    this.setupAppEvents();
+  }
 
-  mainWindow.once("ready-to-show", function () {
-    mainWindow?.show();
-  });
-
-  mainWindow.on("closed", function () {
-    mainWindow = null;
-    serverForRepo().stopServer();
-  });
-}
-
-// Check if another instance of kopia is running
-if (!app.requestSingleInstanceLock()) {
-  app.quit();
-} else {
-  app.on("second-instance", (_event, _commandLine, _workingDirectory) => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) {
-        mainWindow.restore();
-      }
-      mainWindow.focus();
+  private getWindowBounceInfo(windowName: string, display: Display) {
+    const windowPosInfoKey = `window-info-${windowName}`;
+    const windowPosInfo: WindowState | undefined = (this.store.get(windowPosInfoKey)) as any;
+    const defaultOptions: WindowState = {
+      width: display.bounds.width - 200,
+      height: display.bounds.height - 200,
+      x: display.workArea.x,
+      y: display.workArea.y,
+      displayId: -1,
+      isFullScreen: true,
+    };
+    if (windowPosInfo) {
+      defaultOptions.x = windowPosInfo.x ?? display.workArea.x;
+      defaultOptions.y = windowPosInfo.y ?? display.workArea.y;
+      defaultOptions.isFullScreen = windowPosInfo.isFullScreen;
+      defaultOptions.width = windowPosInfo.width;
+      defaultOptions.height = windowPosInfo.height;
     }
-  });
-}
-
-app.on("window-all-closed", function () {
-  app.quit();
-});
-
-app.on("will-quit", function () {
-  console.log("will-quit 이벤트 발생!");
-  serverForRepo().stopServer();
-});
-
-ipcMain.handle("select-dir", async (_event, _arg) => {
-  const result = await dialog.showOpenDialog({
-    properties: ["openDirectory"],
-  });
-
-  if (result.filePaths) {
-    return result.filePaths[0];
-  } else {
-    return null;
-  }
-});
-
-ipcMain.handle("browse-dir", async (_event, path) => {
-  shell.openPath(path);
-});
-
-// mac에서 앱이 어플레케이션에 등록이 안되어 있을 경우
-const isOutsideOfApplicationsFolderOnMac = () => {
-  if (!app.isPackaged || isPortableConfig()) {
-    return false;
+    return defaultOptions;
   }
 
-  // this method is only available on Mac.
-  if (!app.isInApplicationsFolder) {
-    return false;
-  }
+  private async createWindows() {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const defaultOptions: WindowState = this.getWindowBounceInfo(DEFAULT_WINDOW_NAME.MAIN, primaryDisplay);
 
-  return !app.isInApplicationsFolder();
-}
-
-const maybeMoveToApplicationsFolder = () => {
-  if (process.env["KOPIA_UI_TESTING"]) {
-    return;
-  }
-
-  dialog
-    .showMessageBox({
-      buttons: ["Yes", "No"],
-      message:
-        "For best experience, Kopia needs to be installed in Applications folder.\n\nDo you want to move it now?",
-    })
-    .then((r) => {
-      if (r.response == 0) {
-        app.moveToApplicationsFolder();
-      } else {
-        // checkForUpdates(); // 자동 업데이트 비활성화로 주석 처리
+    this.mainWindow = new BrowserWindow({
+      title: this.MAIN_WINDOW_TITLE,
+      titleBarStyle: 'default',
+      width: defaultOptions.width,
+      height: defaultOptions.height,
+      x: defaultOptions.x,
+      y: defaultOptions.y,
+      frame: true,
+      fullscreen: false,
+      fullscreenable: true,
+      resizable: true,
+      autoHideMenuBar: true,
+      webPreferences: {
+        preload: path.join(__dirname, "preload.js"),
       }
-    })
-    .catch((e) => {
-      log.info(e);
     });
+
+    this.mainWindow.loadURL(this.MAIN_WINDOW_URL);
+
+    this.windowManager.addWindow(DEFAULT_WINDOW_NAME.MAIN, this.mainWindow);
+    this.windowManager.setListenWindowBounceState(DEFAULT_WINDOW_NAME.MAIN);
+
+    if (!defaultOptions.isFullScreen) {
+      this.mainWindow.setMinimizable(true);
+      this.mainWindow.setFullScreen(false);
+    }    
+
+    this.mainWindow.webContents.on('did-fail-load', () => {
+      console.error('failed to load content');
+      setTimeout(() => {
+        console.log('reloading');
+        this.mainWindow.loadURL(this.MAIN_WINDOW_URL);
+      }, 500);
+    });
+  }
+
+  private async createAuthWindow() {
+    this.authWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      resizable: false,
+      fullscreen: false,
+      parent: this.mainWindow,
+      frame: false,
+      webPreferences: {
+        webSecurity: false,
+        nodeIntegration: true,
+        partition: 'persist:shared-session',
+        contextIsolation: false
+      }
+    });
+
+    this.windowManager.addWindow(DEFAULT_WINDOW_NAME.AUTH, this.authWindow);
+    this.authWindow.on('closed', () => {
+      app.quit();
+    });
+  }
+
+  private async setupAppInfo() {
+    app.name = 'oneCLOUD';
+  }
+
+  private setupAppEvents() {
+    const handleReload = () => {
+      const window = BrowserWindow.getFocusedWindow();
+      if (!window) return;
+      if (this.disabledReloadWindowId.has(window.id)) return;
+      BrowserWindow.getFocusedWindow()?.reload();
+    }    
+    globalShortcut.register('CommandOrControl+R', handleReload);
+    globalShortcut.register('F5', handleReload);
+
+    if (!app.requestSingleInstanceLock()) {
+      app.quit();
+    } else {
+      app.on('second-instance', (_event, _commandLine, _workingDirectory) => {
+        if (this.mainWindow) {
+          if (this.mainWindow.isMinimized() || !this.mainWindow.isVisible()) {
+            this.mainWindow.show();
+          }
+          this.mainWindow.focus();
+        }
+      })
+    }
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        this.createWindows();
+      }
+    });
+
+    app.on('window-all-closed', () => {
+      serverForRepo().stopServer();
+      if (process.platform === 'darwin') app.quit();
+    });
+    
+  }
+
 }
 
-app.on('ready', () => {
-  const handler = new IpcHandler();
-  handler.setupIPC();
-  loadConfigs();
-
-  if (isPortableConfig()) {
-    const logDir = path.join(configDir(), "logs");
-    log.transports.file.resolvePath = (variables: any) =>
-      path.join(logDir, variables.fileName);
-  }
-  
-  log.transports.console.level = "warn";
-  log.transports.file.level = "debug";
-
-  refreshWillLaunchAtStartup();
-  
-  showMainWindow(); 
-  // 단일 repository 서버 실행
-  serverForRepo().actuateServer();
-
-
-  if (isOutsideOfApplicationsFolderOnMac()) {
-    setTimeout(maybeMoveToApplicationsFolder, 1000);
-  }
-});
+const electronApp = new ElectronApp();
+electronApp.init().catch(console.error);
