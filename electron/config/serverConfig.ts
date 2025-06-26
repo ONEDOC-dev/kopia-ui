@@ -10,9 +10,7 @@ let firstRun = false;
 
 const portableConfigDir = () => {
     let result = [];
-    if (process.env.KOPIA_UI_PORTABLE_CONFIG_DIR) {
-        result.push(process.env.KOPIA_UI_PORTABLE_CONFIG_DIR);
-    }
+    
     if (process.platform === "darwin") {
         result.push(
             path.join(

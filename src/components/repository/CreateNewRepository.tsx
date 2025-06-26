@@ -53,7 +53,7 @@ const CreateRepository = () => {
     <Stack gap={5}>
       <Stack>
         <Typography level={'h3'}>새 저장소 생성</Typography>
-        <Typography>제공된 저장소에 Kopia 저장소를 만들려면 강력한 비밀번호를 입력하세요.</Typography>
+        <Typography>저장소를 만들려면 강력한 비밀번호를 입력하세요.</Typography>
       </Stack>
 
       <Stack>

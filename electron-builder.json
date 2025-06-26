@@ -18,7 +18,7 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "artifactName": "$productName-$version.exe"
+    "artifactName": "${productName}-${version}.exe"
   },
   "win": {
     "target": [

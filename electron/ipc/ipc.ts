@@ -5,7 +5,6 @@ import {ipcMain} from 'electron';
 import {DEFAULT_WINDOW_NAME} from "./const";
 import {getAuthUrl, refreshToken} from "../main/auth";
 import axios, {AxiosError, AxiosRequestConfig} from "axios";
-// import {getServerAddress} from "../main/kopia-server";
 
 export class IpcHandler implements IpcElectronAPI {
   private store: Store;

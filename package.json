@@ -1,6 +1,7 @@
 {
-  "name": "htmlui",
-  "version": "0.1.0",
+  "name": "oneCLOUD",
+  "productName": "oneCLOUD",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "main": ".vite/build/electron/main.js",
   "homepage": "./",
@@ -47,7 +48,6 @@
     "build": "vite build",
     "serve": "vite dev",
     "test": "vitest",
-    "test:kopia": "node test-server.js",
     "prettier": "prettier --write src",
     "prettier:check": "prettier --check src",
     "lint": "eslint src",
