@@ -2,9 +2,11 @@
   "name": "oneCLOUD",
   "productName": "oneCLOUD",
   "version": "1.0.0",
+  "private": true,
   "license": "Apache-2.0",
   "main": ".vite/build/electron/main.js",
   "homepage": "./",
+  "author": "oneDOC",
   "dependencies": {
     "@date-io/date-fns": "^3.2.1",
     "@emotion/react": "^11.14.0",
@@ -114,5 +116,8 @@
   },
   "overrides": {
     "autoprefixer": "10.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
