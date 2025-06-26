@@ -18,12 +18,9 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "artifactName": "${productName}-${version}.exe",
-    "displayName": "${productName}",
-    "uninstallDisplayName": "${productName}"
+    "artifactName": "${productName}-${version}.exe"
   },
   "win": {
-    "publisherName": "oneDOC",
     "target": [
       "nsis",
       "zip"
