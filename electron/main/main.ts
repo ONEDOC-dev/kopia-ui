@@ -1,10 +1,11 @@
-import { app, BrowserWindow, Display, globalShortcut, screen } from 'electron';
+import { app, BrowserWindow, dialog, Display, globalShortcut, screen } from 'electron';
 import Store from 'electron-store';
 import path from 'path';
 import { DEFAULT_WINDOW_NAME } from '../ipc/const';
 import { IpcHandler } from '../ipc/ipc';
 import { WindowManager } from './WindowManager';
 import { serverForRepo } from './kopia-server';
+import { isPortableConfig } from '../config/serverConfig';
 
 interface WindowState {
   x: number;
@@ -42,6 +43,10 @@ class ElectronApp {
     this.createAuthWindow();
     this.setupAppInfo();
     this.setupAppEvents();
+
+    if (this.isOutsideOfApplicationsFolderOnMac()) {
+      setTimeout(this.maybeMoveToApplicationsFolder, 1000);
+    }
   }
 
   private getWindowBounceInfo(windowName: string, display: Display) {
@@ -166,6 +171,35 @@ class ElectronApp {
       if (process.platform === 'darwin') app.quit();
     });
     
+  }
+
+  private isOutsideOfApplicationsFolderOnMac() {
+    if (!app.isPackaged || isPortableConfig()) {
+      return false;
+    }
+  
+    // this method is only available on Mac.
+    if (!app.isInApplicationsFolder) {
+      return false;
+    }
+  
+    return !app.isInApplicationsFolder();
+  }
+
+  private maybeMoveToApplicationsFolder() {
+    dialog
+      .showMessageBox({
+        buttons: ["Yes", "No"],
+        message:
+          "For best experience, Kopia needs to be installed in Applications folder.\n\nDo you want to move it now?",
+      })
+      .then((r) => {
+        if (r.response == 0) {
+          app.moveToApplicationsFolder();
+        } else {
+          // checkForUpdates(); // 자동 업데이트 비활성화로 주석 처리
+        }
+      });
   }
 
 }
