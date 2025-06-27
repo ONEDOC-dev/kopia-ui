@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, Display, globalShortcut, screen } from 'electron';
+import { app, BrowserWindow, dialog, Display, globalShortcut, screen, Event as ElectronEvent } from 'electron';
 import Store from 'electron-store';
 import path from 'path';
 import { DEFAULT_WINDOW_NAME } from '../ipc/const';
@@ -6,6 +6,8 @@ import { IpcHandler } from '../ipc/ipc';
 import { WindowManager } from './WindowManager';
 import { serverForRepo } from './kopia-server';
 import { isPortableConfig } from '../config/serverConfig';
+import { TokenResponse } from '../types';
+import { exchangeCodeForToken } from './auth';
 
 interface WindowState {
   x: number;
@@ -23,7 +25,7 @@ class ElectronApp {
   private mainWindow!: BrowserWindow;
   private authWindow: BrowserWindow | null = null;
   private readonly windowManager: WindowManager;
-  private disabledReloadWindowId: Set<number> = new Set();
+  private keycloakCallbackData: Record<string, string> = {};
 
   constructor () {
     this.store = new Store();
@@ -33,19 +35,23 @@ class ElectronApp {
   public async init() {
     app.commandLine.appendSwitch('enable-features','SharedArrayBuffer');
 
-    await app.whenReady();
-    
-    const handler = new IpcHandler(this.store, this.windowManager);
-    handler.setupIPC();
-
-    serverForRepo().actuateServer();
-    this.createWindows();
-    this.createAuthWindow();
-    this.setupAppInfo();
+    if (this.setupProtocolHandler()) {
+      await app.whenReady();
+      app.on('certificate-error', this.onCertificateError.bind(this));
+      
+      const handler = new IpcHandler(this.store, this.windowManager);
+      handler.setupIPC();
+  
+      serverForRepo().actuateServer();
+      this.createWindows();
+      this.createAuthWindow();
+      this.setupAppInfo();
     this.setupAppEvents();
-
-    if (this.isOutsideOfApplicationsFolderOnMac()) {
-      setTimeout(this.maybeMoveToApplicationsFolder, 1000);
+      await this.loadAllKeycloakCallbackData();
+  
+      if (this.isOutsideOfApplicationsFolderOnMac()) {
+        setTimeout(this.maybeMoveToApplicationsFolder, 1000);
+      }
     }
   }
 
@@ -86,6 +92,7 @@ class ElectronApp {
       fullscreenable: true,
       resizable: true,
       autoHideMenuBar: true,
+      backgroundColor: '#000000',
       webPreferences: {
         preload: path.join(__dirname, "preload.js"),
       }
@@ -100,14 +107,6 @@ class ElectronApp {
       this.mainWindow.setMinimizable(true);
       this.mainWindow.setFullScreen(false);
     }    
-
-    this.mainWindow.webContents.on('did-fail-load', () => {
-      console.error('failed to load content');
-      setTimeout(() => {
-        console.log('reloading');
-        this.mainWindow.loadURL(this.MAIN_WINDOW_URL);
-      }, 500);
-    });
   }
 
   private async createAuthWindow() {
@@ -138,15 +137,6 @@ class ElectronApp {
   }
 
   private setupAppEvents() {
-    const handleReload = () => {
-      const window = BrowserWindow.getFocusedWindow();
-      if (!window) return;
-      if (this.disabledReloadWindowId.has(window.id)) return;
-      BrowserWindow.getFocusedWindow()?.reload();
-    }    
-    globalShortcut.register('CommandOrControl+R', handleReload);
-    globalShortcut.register('F5', handleReload);
-
     if (!app.requestSingleInstanceLock()) {
       app.quit();
     } else {
@@ -200,6 +190,113 @@ class ElectronApp {
           // checkForUpdates(); // 자동 업데이트 비활성화로 주석 처리
         }
       });
+  }
+
+  private setupProtocolHandler(): Boolean {
+    if (process.defaultApp) {
+      if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient('onecloud', process.execPath, [path.resolve(process.argv[1])])
+      }
+    } else {
+      app.setAsDefaultProtocolClient('onecloud')
+    }
+    if (process.platform !== 'darwin') {
+      const gotTheLock = app.requestSingleInstanceLock()
+      if (!gotTheLock) {
+        return false;
+      } else {
+        app.on('second-instance', (_, commandLine) => {
+          const schemaData = commandLine.find(arg => arg.startsWith("onecloud://"));
+          if (schemaData) this.handleOpenUrl(new Event('open-url'), schemaData);
+        });
+      }
+    } else {
+      app.on('open-url', this.handleOpenUrl.bind(this));
+    }
+    return true;
+  }
+
+  private async handleOpenUrl(event: ElectronEvent, url: string): Promise<void> {
+    event.preventDefault();
+
+    const urlObj = new URL(url);
+    if (urlObj.hostname === 'auth_redirect') {
+      const code = urlObj.hash.match(/code=([^&]*)/)?.[1] ?? urlObj.searchParams.get('code');
+      const error = urlObj.hash.match(/error=([^&]*)/)?.[1] ?? urlObj.searchParams.get('error');
+      const state = urlObj.hash.match(/state=([^&]*)/)?.[1] ?? urlObj.searchParams.get('state');
+
+      if (error) {
+        this.handleAuthError(new Error(error));
+        return;
+      }
+      if (code && this.authWindow) {
+        try {
+          let keycloakData;
+          if (state) keycloakData = this.getKeycloakCallbackData(state);
+          const tokenResponse = await exchangeCodeForToken(code, keycloakData?.pkceCodeVerifier);
+          this.handleSuccessfulAuth(tokenResponse);
+        } catch (error) {
+          this.handleAuthError(error);
+        }
+      }
+      return
+    } else if (urlObj.hostname === 'auth_logout_redirect') {
+      this.handleLogoutAuth()
+    }
+  }
+
+  private handleSuccessfulAuth(tokenResponse: TokenResponse): void {
+    this.store.set('access_token', tokenResponse.access_token);
+    this.store.set('refresh_token', tokenResponse.refresh_token);
+    this.authWindow?.hide();
+    this.mainWindow?.show();
+    this.mainWindow?.webContents.send('auth-success', tokenResponse);
+  }
+
+  private handleLogoutAuth(): void {
+    this.store.delete('access_token');
+    this.store.delete('refresh_token');
+    this.mainWindow?.reload();
+  }
+
+  private handleAuthError(error: unknown): void {
+    console.error('Token exchange error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    this.mainWindow?.webContents.send('auth-error', errorMessage);
+  }
+
+  private getKeycloakCallbackData(state: string) {
+    const data = this.keycloakCallbackData[`kc-callback-${state}`];
+    if (data) {
+      return JSON.parse(data);
+    }
+    return {};
+  }
+
+  private async loadAllKeycloakCallbackData() {
+    const rawData = await this.mainWindow?.webContents.executeJavaScript(`
+      Object.keys(localStorage).reduce((obj, key) => {
+        if (key.startsWith('kc-callback-')) {
+          obj[key] = localStorage.getItem(key);
+        }
+        return obj;
+      }, {})
+    `);
+    if (rawData) {
+      this.keycloakCallbackData = rawData;
+    }
+  }
+
+  private onCertificateError(
+    event: ElectronEvent,
+    _webContents: any,
+    _url: string,
+    _error: string,
+    _certificate: any,
+    callback: Function
+  ) {
+    event.preventDefault();
+    callback(true);
   }
 
 }

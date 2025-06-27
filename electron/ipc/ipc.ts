@@ -16,11 +16,11 @@ export class IpcHandler implements IpcElectronAPI {
   }
 
   public setupIPC(): void {
-    // ipcMain.handle('get-auth-tokens', this.getAuthTokens.bind(this));
-    // ipcMain.handle('refresh-token', this.refreshToken.bind(this));
-    // ipcMain.handle('store-auth-tokens',
-    //   (_event, tokenResponse: TokenResponse) => this.storeAuthTokens.bind(tokenResponse));
-    // ipcMain.handle('auth-start', this.startAuth.bind(this));
+    ipcMain.handle('get-auth-tokens', this.getAuthTokens.bind(this));
+    ipcMain.handle('refresh-token', this.refreshToken.bind(this));
+    ipcMain.handle('store-auth-tokens',
+      (_event, tokenResponse: TokenResponse) => this.storeAuthTokens.bind(tokenResponse));
+    ipcMain.handle('auth-start', this.startAuth.bind(this));
     ipcMain.handle('api-request', (_, config: AxiosRequestConfig) => this.apiRequest(config));
   }
 
@@ -55,53 +55,53 @@ export class IpcHandler implements IpcElectronAPI {
     }
   }
 
-  // public async startAuth(): Promise<void> {
-  //   try {
-  //     await this.refreshToken();
-  //   } catch (e) {
-  //     const authWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.AUTH);
-  //     if (!authWindow) return;
-  //     await authWindow.loadURL(getAuthUrl());
-  //     authWindow.show();
-  //     authWindow.focus();
-  //     const mainWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.MAIN);
-  //     mainWindow?.webContents.send('auth-error', "");
-  //   }
-  // }
+  public async startAuth(): Promise<void> {
+    try {
+      await this.refreshToken();
+    } catch (e) {
+      const authWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.AUTH);
+      if (!authWindow) return;
+      await authWindow.loadURL(getAuthUrl());
+      authWindow.show();
+      authWindow.focus();
+      const mainWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.MAIN);
+      mainWindow?.webContents.send('auth-error', "");
+    }
+  }
   
-  // public async getAuthTokens(): Promise<{ access_token: string | null; refresh_token: string | null }> {
-  //   return {
-  //     access_token: this.store.get('access_token') as string | null,
-  //     refresh_token: this.store.get('refresh_token') as string | null
-  //   };
-  // }
+  public async getAuthTokens(): Promise<{ access_token: string | null; refresh_token: string | null }> {
+    return {
+      access_token: this.store.get('access_token') as string | null,
+      refresh_token: this.store.get('refresh_token') as string | null
+    };
+  }
   
-  // public async storeAuthTokens(tokenResponse: TokenResponse): Promise<void> {
-  //   this.updateTokens(tokenResponse);
-  // }
+  public async storeAuthTokens(tokenResponse: TokenResponse): Promise<void> {
+    this.updateTokens(tokenResponse);
+  }
   
-  // public async refreshToken(): Promise<TokenResponse> {
-  //   const refreshTokenValue = this.store.get('refresh_token') as string | undefined;
-  //   if (!refreshTokenValue) {
-  //     throw new Error('No refresh token available');
-  //   }
+  public async refreshToken(): Promise<TokenResponse> {
+    const refreshTokenValue = this.store.get('refresh_token') as string | undefined;
+    if (!refreshTokenValue) {
+      throw new Error('No refresh token available');
+    }
   
-  //   try {
-  //     const tokenResponse = await refreshToken(refreshTokenValue);
-  //     this.updateTokens(tokenResponse);
-  //     return tokenResponse;
-  //   } catch (error) {
-  //     console.error('Token refresh error:', error);
-  //     throw new Error('Failed to refresh token');
-  //   }
-  // }
+    try {
+      const tokenResponse = await refreshToken(refreshTokenValue);
+      this.updateTokens(tokenResponse);
+      return tokenResponse;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      throw new Error('Failed to refresh token');
+    }
+  }
   
-  // private updateTokens(tokenResponse: TokenResponse): void {
-  //   this.store.set('access_token', tokenResponse.access_token);
-  //   this.store.set('refresh_token', tokenResponse.refresh_token);
-  //   const mainWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.MAIN);
-  //   mainWindow?.webContents.send('auth-success', tokenResponse);
-  // }
+  private updateTokens(tokenResponse: TokenResponse): void {
+    this.store.set('access_token', tokenResponse.access_token);
+    this.store.set('refresh_token', tokenResponse.refresh_token);
+    const mainWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.MAIN);
+    mainWindow?.webContents.send('auth-success', tokenResponse);
+  }
 }
 
 // export function setupIPC(store: Store, windowManager: WindowManager): IpcHandler {

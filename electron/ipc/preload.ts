@@ -4,6 +4,9 @@ import {PreloadElectronAPI, TokenResponse} from "./types"
 import {AxiosRequestConfig} from "axios";
 
 const electronAPI: PreloadElectronAPI = {
+  getAuthTokens: () => ipcRenderer.invoke('get-auth-tokens'),
+  storeAuthTokens: (tokenResponse) => ipcRenderer.invoke('store-auth-tokens', tokenResponse),
+  refreshToken: () => ipcRenderer.invoke('refresh-token'),
   authStart: () => ipcRenderer.invoke('auth-start'),
   onAuthError: (callback) => {
     const wrappedCallback = (_: any, error: string) => callback(error);

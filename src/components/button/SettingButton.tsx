@@ -1,15 +1,15 @@
 import React from 'react';
 import {Dropdown, IconButton, Menu, MenuButton, MenuItem} from "@mui/joy";
 import {SettingsOutlined} from "@mui/icons-material";
+import { keycloak } from '@/config/keycloak.config';
 // import {keycloak} from "@/config/keycloak.config";
 
 const SettingButton = () => {
 
   const handleLogout = () => {
-    // const isElectron = typeof window.electron !== 'undefined';
-    // if (!isElectron) return keycloak.logout();
-    // return keycloak.logout({redirectUri: 'onepacs://auth_logout_redirect'});
-    console.log('로그아웃 기능이 비활성화되었습니다.');
+    const isElectron = typeof window.electron !== 'undefined';
+    if (!isElectron) return keycloak.logout();
+    return keycloak.logout({redirectUri: 'onecloud://auth_logout_redirect'});
   }
 
   return (

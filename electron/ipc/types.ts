@@ -22,19 +22,19 @@ export interface SafeAxiosRequest {
   data?: any;
 }
 
-export interface PreloadElectronAPI {
-  // authStart: () => Promise<TokenResponse>;
-  // onAuthError: (callback: (error: string) => void) => void;
-  // onAuthSuccess: (callback: (tokenResponse: TokenResponse) => void) => void;
+export interface PreloadElectronAPI extends ElectronAPI {
+  authStart: () => Promise<TokenResponse>;
+  onAuthError: (callback: (error: string) => void) => void;
+  onAuthSuccess: (callback: (tokenResponse: TokenResponse) => void) => void;  
+}
+
+export interface ElectronAPI {
+  getAuthTokens: () => Promise<{ access_token: string | null; refresh_token: string | null }>;
+  storeAuthTokens: (tokenResponse: TokenResponse) => Promise<void>;
+  refreshToken: () => Promise<TokenResponse>;
   apiRequest: (config: AxiosRequestConfig) => Promise<any>;
 }
 
-// export interface ElectronAPI extends PreloadElectronAPI {
-  // getAuthTokens: () => Promise<{ access_token: string | null; refresh_token: string | null }>;
-  // storeAuthTokens: (tokenResponse: TokenResponse) => Promise<void>;
-  // refreshToken: () => Promise<TokenResponse>;
-// }
-
-export interface IpcElectronAPI extends PreloadElectronAPI {
+export interface IpcElectronAPI extends ElectronAPI {
   setupIPC: () => void;
 }

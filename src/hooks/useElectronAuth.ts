@@ -9,20 +9,19 @@ export const useElectronAuth = () => {
 
   useEffect(() => {
     const authStart = async () => {
-      // const res = await window.electron.authStart();
-      // console.log(res);
+      const res = await window.electron.authStart();
+      console.log(res);
     }
     if (isElectron) {
       setIsAuthenticated(false);
-      // window.electron.onAuthError((error: string) => {
-      //   setAuthError(error);
-      //   setIsInitialized(true);
-      // });
-      // window.electron.onAuthSuccess(async (tokenResponse: any) => {
-      //   authSuccess(tokenResponse);
-      //   // const isAuth = await keycloak.init({...initKeycloak, token: tokenResponse.access_token, refreshToken: tokenResponse.refresh_token})
-      // });
-      // authStart();
+      window.electron.onAuthError((error: string) => {
+        setAuthError(error);
+        setIsInitialized(true);
+      });
+      window.electron.onAuthSuccess(async (tokenResponse: any) => {
+        authSuccess(tokenResponse);
+      });
+      authStart();
     }
   }, [isElectron]);
 
