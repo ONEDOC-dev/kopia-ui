@@ -53,13 +53,11 @@
     "prettier": "prettier --write src",
     "prettier:check": "prettier --check src",
     "lint": "eslint src",
-    "build:electron": "electron-builder",
-    "electron": "electron .",
     "forge:start": "electron-forge start",
     "forge:package": "electron-forge package",
     "forge:make": "electron-forge make",
     "forge:publish": "electron-forge publish",
-    "update:swa": "npm swa build && npx swa deploy --env production"
+    "update:swa": "npx swa build && npx swa deploy --env production"
   },
   "eslintConfig": {
     "extends": "react-app"

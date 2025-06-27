@@ -42,9 +42,9 @@ export const defaultServerBinary = () => {
     }
 
     const binaries = {
-        mac: path.join(process.resourcesPath, 'server', 'mac', 'kopia'),
-        win: path.join(process.resourcesPath, 'server', 'win', 'kopia.exe'),
-        linux: path.join(process.resourcesPath, 'server', 'linux', 'kopia'),
+        mac: path.join(process.resourcesPath, 'resources', 'mac', 'kopia'),
+        win: path.join(process.resourcesPath, 'resources', 'win', 'kopia.exe'),
+        linux: path.join(process.resourcesPath, 'resources', 'linux', 'kopia'),
     };
     return binaries[osShortName as 'win' | 'mac' | 'linux'];
 }

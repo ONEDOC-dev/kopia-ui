@@ -10,7 +10,7 @@
   "extraResources": [
     {
       "from": "resources",
-      "to": "server",
+      "to": "resources",
       "filter": [
         "**/*"
       ]
