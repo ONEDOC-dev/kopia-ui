@@ -1,6 +1,7 @@
 {
   "appId": "com.onedoc.onecloud",
   "productName": "oneCLOUD",
+  "icon": "public/oneCLOUD_1024.png",
   "files": [
     ".vite/build/**/*",
     "resources/**/*",
