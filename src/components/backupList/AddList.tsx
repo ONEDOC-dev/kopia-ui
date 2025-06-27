@@ -25,11 +25,29 @@ interface BackupListSettingContentProps {
 }
 
 export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirDisabled}: BackupListSettingContentProps) => {
+  const {addAlert} = useAlert();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const {control, formState: {errors}, handleSubmit, getValues} = useForm<BackupListSettingProps>({
+  const {control, formState: {errors}, handleSubmit, setValue, getValues} = useForm<BackupListSettingProps>({
     mode: 'onBlur',
     defaultValues: initValues
   });
+
+  const onDirectorySelect = async () => {
+    try {
+      setIsLoading(true);
+      const selectedPath = await window.electron.selectDirectory();
+      if (selectedPath) {
+        setValue('backupDir', selectedPath);
+      }
+    } catch (error) {
+      addAlert({
+        message: `디렉토리 선택 오류: ${error}}`,
+        color: 'danger',
+      });
+    }
+    setIsLoading(false);
+  }
 
   return (
     <Sheet sx={{py: 2}}>
@@ -46,12 +64,14 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
               <>
                 <Typography color={'danger'} level={'body-sm'} >*해당 경로에 있는 자료들이 백업 됩니다.</Typography>
                 <Input disabled={backupDirDisabled}
-                       {...(!backupDirDisabled && {
+                       {...(!backupDirDisabled && window.electron && {
                          endDecorator: (
                            <Button
                              variant="solid"
                              color="primary"
                              sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                             onClick={onDirectorySelect}
+                             loading={isLoading}
                            >
                              <FolderOpen />
                            </Button>

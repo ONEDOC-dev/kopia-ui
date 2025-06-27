@@ -1,7 +1,7 @@
 import {IpcElectronAPI, TokenResponse} from "./types";
 import Store from "electron-store";
 import {WindowManager} from "../main/WindowManager";
-import {ipcMain} from 'electron';
+import {dialog, ipcMain, shell} from 'electron';
 import {DEFAULT_WINDOW_NAME} from "./const";
 import {getAuthUrl, refreshToken} from "../main/auth";
 import axios, {AxiosError, AxiosRequestConfig} from "axios";
@@ -22,6 +22,7 @@ export class IpcHandler implements IpcElectronAPI {
       (_event, tokenResponse: TokenResponse) => this.storeAuthTokens.bind(tokenResponse));
     ipcMain.handle('auth-start', this.startAuth.bind(this));
     ipcMain.handle('api-request', (_, config: AxiosRequestConfig) => this.apiRequest(config));
+    ipcMain.handle('select-directory', () => this.selectDirectory());
   }
 
   public async apiRequest(config: AxiosRequestConfig): Promise<any>{
@@ -101,6 +102,18 @@ export class IpcHandler implements IpcElectronAPI {
     this.store.set('refresh_token', tokenResponse.refresh_token);
     const mainWindow = this.windowManager.get(DEFAULT_WINDOW_NAME.MAIN);
     mainWindow?.webContents.send('auth-success', tokenResponse);
+  }
+
+  public async selectDirectory(): Promise<string | null> {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+    });
+
+    if (result.filePaths && result.filePaths.length > 0) {
+      return result.filePaths[0];
+    } else {
+      return null;
+    }
   }
 }
 

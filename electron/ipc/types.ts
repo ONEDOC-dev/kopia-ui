@@ -33,6 +33,7 @@ export interface ElectronAPI {
   storeAuthTokens: (tokenResponse: TokenResponse) => Promise<void>;
   refreshToken: () => Promise<TokenResponse>;
   apiRequest: (config: AxiosRequestConfig) => Promise<any>;
+  selectDirectory: () => Promise<string | null>;
 }
 
 export interface IpcElectronAPI extends ElectronAPI {

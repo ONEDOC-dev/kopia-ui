@@ -20,6 +20,7 @@ const electronAPI: PreloadElectronAPI = {
     };
   },
   apiRequest: (config: AxiosRequestConfig) => ipcRenderer.invoke('api-request', config),
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
 }
 
 contextBridge.exposeInMainWorld('electron', electronAPI);
