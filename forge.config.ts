@@ -6,7 +6,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: 'public/oneCLOUD.icns',
+    icon: process.platform === 'win32' ? 'public/oneCLOUD_1024.png' : 'public/oneCLOUD.icns',
     extraResource: [
       'resources',
       'public'
