@@ -6,7 +6,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: 'public/oneCLOUD_1024.png',
+    icon: 'public/oneCLOUD.icns',
     extraResource: [
       'resources',
       'public'
