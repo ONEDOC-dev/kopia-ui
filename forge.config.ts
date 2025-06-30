@@ -6,7 +6,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: process.platform === 'win32' ? 'public/oneCLOUD_1024.png' : 'public/oneCLOUD.icns',
+    icon: process.platform === 'win32' ? 'public/oneCLOUD.ico' : 'public/oneCLOUD.icns',
     extraResource: [
       'resources',
       'public'
@@ -16,7 +16,7 @@ const config: ForgeConfig = {
     new MakerSquirrel({
       name: 'oneCLOUD',
       setupExe: '${productName}-${version}-setup.exe',
-      setupIcon: 'public/oneCLOUD_1024.png',
+      setupIcon: 'public/oneCLOUD.ico',
     }),
     new MakerZIP({}, ['darwin'])
   ],
