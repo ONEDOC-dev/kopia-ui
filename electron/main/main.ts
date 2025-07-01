@@ -20,7 +20,9 @@ interface WindowState {
 
 class ElectronApp {
   private readonly MAIN_WINDOW_TITLE = `oneCLOUD ${app.getVersion()}`;
-  private readonly MAIN_WINDOW_URL = `https://gray-rock-0471a3b10.1.azurestaticapps.net`;
+  private readonly MAIN_WINDOW_URL = process.env.NODE_ENV === 'development' || !app.isPackaged 
+    ? 'http://localhost:3000' 
+    : 'https://gray-rock-0471a3b10.1.azurestaticapps.net';
   private readonly store: Store;
   private mainWindow!: BrowserWindow;
   private authWindow: BrowserWindow | null = null;

@@ -16,6 +16,7 @@ export interface ConnectToRepositoryConfig {
 
 const ConnectToRepository = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const {control, formState: {errors}, getValues} = useFormContext<ConnectToRepositoryConfig>();
 
@@ -41,9 +42,9 @@ const ConnectToRepository = () => {
             <Input
               {...field}
               placeholder={'저장소 비밀번호를 입력해주세요.'}
-              type={'password'}
+              type={showPassword ? 'text' : 'password'}
               endDecorator={
-                <IconButton>
+                <IconButton onClick={() => setShowPassword(!showPassword)}>
                   <Visibility />
                 </IconButton>
               }
@@ -66,11 +67,6 @@ const ConnectToRepository = () => {
             <Input
               {...field}
               placeholder={'저장소 설명을 입력해주세요.'}
-              endDecorator={
-                <IconButton>
-                  <Visibility />
-                </IconButton>
-              }
             />
           )}
         </FormField>
