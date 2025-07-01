@@ -43,8 +43,8 @@ const BackupList = () => {
             id: res.source.path,
             backupDir: res.source.path,
             backupTime: backupTimes,
-            totalVolume: res.lastSnapshot.stats.totalSize,
-            lastBackupTime: res.lastSnapshot.endTime
+            totalVolume: res.lastSnapshot?.stats.totalSize || 0,
+            lastBackupTime: res.lastSnapshot?.endTime || '-'
           });
         });
         setBackupList(_backupList);
