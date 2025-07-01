@@ -8,7 +8,8 @@ import {useRepository} from "@/hooks/useRepository";
 import {useAlert} from "@/contexts/ContextAlert";
 
 const RepositoryManage = () => {
-  const {repositoryStatus} = useRepositoryStatusStore();
+  const {getRepositoryStatus} = useRepoApi();
+  const {repositoryStatus, setRepositoryStatus} = useRepositoryStatusStore();
   const {updateRepositoryConnected} = useRepository();
   const {updateDescription, disconnect} = useRepoApi();
   const [isLoading, setIsLoading] = useState(false)
@@ -23,11 +24,20 @@ const RepositoryManage = () => {
   const handleUpdateDescription = async () => {
     setIsLoading(true);
     await updateDescription(getValues('description')!)
-      .then(res => {
-        addAlert({
-          message: '저장소 설명이 변경되었습니다.',
-          color: 'success'
-        });
+      .then(async (res) => {
+        const repoRes = await getRepositoryStatus();
+        setRepositoryStatus(repoRes);
+        if (repoRes.connected){
+          addAlert({
+            message: '저장소 설명이 변경되었습니다.',
+            color: 'success'
+          });
+        } else {
+          addAlert({
+            message: `저장소 설명을 변경하는데 실패했습니다`,
+            color: 'danger'
+          });
+        }
       })
       .catch(err => {
         addAlert({
