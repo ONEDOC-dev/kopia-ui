@@ -17,6 +17,7 @@ import {
 import dayjs from "dayjs";
 import usePolicy from "@/api/v1/usePolicy";
 import {useAlert} from "@/contexts/ContextAlert";
+import { FolderOpen } from "@mui/icons-material";
 
 interface ActionButtonCommonProps {
   userName: string;
@@ -185,6 +186,22 @@ const RestoreButton = ({
     setValue('restoreDir', '');
   }, [open]);
 
+  const onDirectorySelect = async () => {
+    try {
+      setIsLoading(true);
+      const selectedPath = await window.electron.selectDirectory();
+      if (selectedPath) {
+        setValue('restoreDir', selectedPath);
+      }
+    } catch (error) {
+      addAlert({
+        message: `디렉토리 선택 오류: ${error}}`,
+        color: 'danger',
+      });
+    }
+    setIsLoading(false);
+  }
+
   const RestoreButtonContent = () => (
     <Sheet>
       <form id={'restore-form'} onSubmit={handleSubmit(handleRestore)}>
@@ -196,7 +213,23 @@ const RestoreButton = ({
           error={!!errors.restoreDir}
         >
           {(field) => (
-            <Input {...field} placeholder={'복구할 경로를 선택해주세요'} />
+            <Input 
+              {...field} 
+              placeholder={'복구할 경로를 선택해주세요'} 
+              {...(window.electron && {
+                endDecorator: (
+                  <Button
+                    variant="solid"
+                    color="primary"
+                    sx={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                    onClick={onDirectorySelect}
+                    loading={isLoading}
+                  >
+                    <FolderOpen />
+                  </Button>
+                )
+              })}
+            />
           )}
         </FormField>
       </form>
