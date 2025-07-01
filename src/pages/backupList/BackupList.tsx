@@ -38,10 +38,11 @@ const BackupList = () => {
       .then(result => {
         const _backupList: BackupListProps[] = [];
         result.sources.map((res, idx) => {
+          const backupTimes = res.schedule.timeOfDay?.map(val => `${padTwoDigits(val.hour)}:${padTwoDigits(val.min)}`) || [];
           _backupList.push({
             id: res.source.path,
             backupDir: res.source.path,
-            backupTime: res.schedule.timeOfDay?.map(val => `${padTwoDigits(val.hour)}:${padTwoDigits(val.min)}`) || [],
+            backupTime: backupTimes,
             totalVolume: res.lastSnapshot.stats.totalSize,
             lastBackupTime: res.lastSnapshot.endTime
           });
@@ -83,7 +84,20 @@ const BackupList = () => {
   const columns: GridColDef[] = [
     { field: 'backupDir', flex: 2, headerName: '백업 경로(원본)' },
     { field: 'totalVolume', flex: 1, headerName: '현재 총 용량', valueGetter: (value) => formatBytes(value) },
-    { field: 'backupTime', flex: 1, headerName: '백업 시간' },
+    { 
+      field: 'backupTime', 
+      flex: 1, 
+      headerName: '백업 시간',
+      renderCell: (params) => {
+        return (
+          <Stack flexDirection={'column'} height={'100%'}>
+            {params.value?.map((time: string, index: number) => (
+              <Stack key={index} flex={1} minHeight={0} justifyContent={'center'}>{time}</Stack>
+            ))}
+          </Stack>
+        );
+      }
+    },
     { field: 'lastBackupTime', flex: 1, headerName: '마지막 백업', valueGetter: (value) => formatDates(value) },
     { field: 'actions', flex: 2, headerName: '액션', renderCell: (params) => (<ActionButtons params={params} onFresh={getBackupList} />)},
   ];
