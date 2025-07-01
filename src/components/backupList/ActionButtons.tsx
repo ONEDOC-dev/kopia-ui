@@ -271,8 +271,8 @@ const SettingButton = ({
     })
       .then(res => {
         addAlert({
-          message: '백업 리스트 설정이 변경되었습니다.',
-          color: 'succes'
+          message: '백업 리스트 설정이 변경되었습니다',
+          color: 'success'
         });
         setOpen(false);
         onFresh();
@@ -281,7 +281,7 @@ const SettingButton = ({
         console.log(err);
         addAlert({
           message: err.message,
-          color: 'succes'
+          color: 'success'
         });
       })
       .finally(() => {
