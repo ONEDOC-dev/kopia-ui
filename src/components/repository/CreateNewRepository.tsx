@@ -17,6 +17,8 @@ export interface CreateNewRepositoryConfig {
 const CreateRepository = () => {
   const {getAlgorithms} = useRepoApi();
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState<boolean>(false);
 
   const [algorithms, setAlgorithms] = useState<getAlgorithmsResponse>({} as getAlgorithmsResponse)
   const [formatVersion, setFormatVersion] = useState<string>('2');
@@ -74,9 +76,9 @@ const CreateRepository = () => {
               <Input
                 {...field}
                 placeholder={'저장소 비밀번호를 입력해주세요.'}
-                type={'password'}
+                type={showPassword ? 'test' : 'password'}
                 endDecorator={
-                  <IconButton>
+                  <IconButton onClick={() => setShowPassword(!showPassword)}>
                     <Visibility />
                   </IconButton>
                 }
@@ -102,7 +104,16 @@ const CreateRepository = () => {
                      }}
           >
             {(field) => (
-              <Input {...field} placeholder={'저장소 비밀번호를 다시 입력해주세요.'} type={'password'} />
+              <Input 
+                {...field} 
+                placeholder={'저장소 비밀번호를 다시 입력해주세요.'} 
+                type={showPasswordConfirm ? 'text' : 'password'} 
+                endDecorator={
+                  <IconButton onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}>
+                    <Visibility />
+                  </IconButton>
+                }
+              />
             )}
           </FormField>
         </Stack>
