@@ -160,6 +160,10 @@ class ElectronApp {
       serverForRepo().stopServer();
       if (process.platform === 'darwin') app.quit();
     });
+
+    app.setLoginItemSettings({
+      openAtLogin: true,
+    });
     
   }
 

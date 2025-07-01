@@ -86,6 +86,7 @@
     "@electron-forge/plugin-electronegativity": "^7.8.1",
     "@electron-forge/plugin-fuses": "^7.8.1",
     "@electron-forge/plugin-vite": "^7.8.1",
+    "@electron-forge/publisher-s3": "^7.8.1",
     "@eslint/js": "^9.27.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

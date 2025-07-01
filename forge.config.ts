@@ -2,6 +2,8 @@ import { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { VitePlugin } from '@electron-forge/plugin-vite';
+import { FusesPlugin } from '@electron-forge/plugin-fuses';
+import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -17,10 +19,21 @@ const config: ForgeConfig = {
       name: 'oneCLOUD',
       setupExe: '${productName}-${version}-setup.exe',
       setupIcon: 'public/oneCLOUD.ico',
+      description: 'oneCLOUD - Cloud Backup and Storage Solution',
+      authors: 'oneDOC',
+      version: '${version}',
     }),
     new MakerZIP({}, ['darwin'])
   ],
-  publishers: [],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-s3',
+        config: {
+          bucket: 'my-bucket',
+          public: true
+        }
+    }
+  ],
   plugins: [
     new VitePlugin({
       build: [
@@ -39,6 +52,15 @@ const config: ForgeConfig = {
           config: 'vite.config.js',
         },
       ],
+    }),
+    new FusesPlugin({
+      version: FuseVersion.V1,
+      [FuseV1Options.RunAsNode]: false,
+      [FuseV1Options.EnableCookieEncryption]: true,
+      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+      [FuseV1Options.EnableNodeCliInspectArguments]: false,
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+      [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
 }
