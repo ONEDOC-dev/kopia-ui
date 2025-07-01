@@ -119,11 +119,11 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
   )
 }
 
-export const BackupListSettingActions = () => {
+export const BackupListSettingActions = ({setOpen}: {setOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
 
   return (
     <>
-      <Button sx={{width: '150px'}} variant={'outlined'} color={'neutral'}>취소</Button>
+      <Button sx={{width: '150px'}} variant={'outlined'} color={'neutral'} onClick={() => setOpen(false)}>취소</Button>
       <Button sx={{width: '150px'}} variant={'solid'} type={'submit'} form={'add-list-form'}>저장</Button>
     </>
   )
@@ -213,7 +213,7 @@ const AddList = ({onAdd}: AddListProps) => {
                       backupDirDisabled={false}
                     />
                  }
-                 actions={<BackupListSettingActions />}
+                 actions={<BackupListSettingActions setOpen={setOpen} />}
                  modalSx={{width: '600px'}}
       />
     </>
