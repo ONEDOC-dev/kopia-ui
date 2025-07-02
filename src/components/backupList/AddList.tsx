@@ -92,7 +92,19 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
                 name={'firstBackupPeriod'}
                 control={control}
                 label={'첫 번째 타임'}
-                rules={{ required: '백업 시간을 설정해 주세요' }}
+                rules={{ 
+                  required: '백업 시간을 설정해 주세요',
+                  validate: (value) => {
+                    const secondBackupPeriod = getValues('secondBackupPeriod');
+                    if (value && secondBackupPeriod && 
+                        typeof value === 'object' && 'get' in value &&
+                        typeof secondBackupPeriod === 'object' && 'get' in secondBackupPeriod &&
+                        value.get('hour') === secondBackupPeriod.get('hour')) {
+                      return "첫 번째와 두 번째 백업 '시(hour)'가 같을 수 없습니다.";
+                    }
+                    return true;
+                  }
+                }}
                 error={!!errors.firstBackupPeriod}
                 helperText={errors.firstBackupPeriod?.message}
               >
@@ -105,7 +117,19 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
                 name={'secondBackupPeriod'}
                 control={control}
                 label={'두 번째 타임'}
-                rules={{ required: '백업 시간을 설정해 주세요', validate: (value) => value === getValues('firstBackupPeriod') || true }}
+                rules={{ 
+                  required: '백업 시간을 설정해 주세요',
+                  validate: (value) => {
+                    const firstBackupPeriod = getValues('firstBackupPeriod');
+                    if (value && firstBackupPeriod && 
+                        typeof value === 'object' && 'get' in value &&
+                        typeof firstBackupPeriod === 'object' && 'get' in firstBackupPeriod &&
+                        value.get('hour') === firstBackupPeriod.get('hour')) {
+                      return "첫 번째와 두 번째 백업 '시(hour)'가 같을 수 없습니다.";
+                    }
+                    return true;
+                  }
+                }}
                 error={!!errors.secondBackupPeriod}
                 helperText={errors.secondBackupPeriod?.message}
               >
@@ -158,7 +182,7 @@ const AddList = ({onAdd}: AddListProps) => {
             }
           }
         }
-
+        console.log(request);
         setSource(request)
           .then(res => {
             if (res.snapshotted){
