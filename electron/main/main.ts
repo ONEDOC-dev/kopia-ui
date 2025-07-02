@@ -129,9 +129,6 @@ class ElectronApp {
     });
 
     this.windowManager.addWindow(DEFAULT_WINDOW_NAME.AUTH, this.authWindow);
-    this.authWindow.on('closed', () => {
-      app.quit();
-    });
   }
 
   private async setupAppInfo() {
@@ -158,9 +155,9 @@ class ElectronApp {
       }
     });
 
-    app.on('window-all-closed', () => {
-      serverForRepo().stopServer();
-      if (process.platform === 'darwin') app.quit();
+    app.on('window-all-closed', async () => {
+      await serverForRepo().stopServer();
+      app.quit();
     });
 
     app.setLoginItemSettings({

@@ -7,6 +7,7 @@ import { spawn } from "child_process";
 import { configDir, isPortableConfig } from "../config/serverConfig";
 
 let servers: { [key: string]: any } = {};
+let statusPollInterval: NodeJS.Timeout | null = null; // polling interval 추적용
 
 export const kopiaServer = () => {
   const repoID = "oneCLOUD-server";
@@ -131,14 +132,22 @@ export const kopiaServer = () => {
         req.end();
       }
 
-      const statusPollInterval = setInterval(pollOnce, pollInterval);
+      // 기존 interval이 있다면 정리
+      if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+      }
+      
+      statusPollInterval = setInterval(pollOnce, pollInterval);
 
       runningServerProcess.on("close", (code: any, signal: any) => {
         this.appendToLog(
           `child process exited with code ${code} and signal ${signal}`,
         );
         if (runningServerProcess === p) {
-          clearInterval(statusPollInterval);
+          if (statusPollInterval) {
+            clearInterval(statusPollInterval);
+            statusPollInterval = null;
+          }
 
           console.log(`========== Kopia server stop ==========`);
           console.log(`Termination code: ${code}`);
@@ -218,19 +227,50 @@ export const kopiaServer = () => {
       });
       console.log(`${data}`);
     },
-    stopServer() {
-      if (!runningServerProcess) {
-        console.log("stopServer: server not started");
-        return;
-      }
+    async stopServer() {
+      return new Promise<void>((resolve) => {
+        if (!runningServerProcess) {
+          console.log("stopServer: server not started");
+          resolve();
+          return;
+        }
 
-      runningServerProcess.kill();
-      runningServerAddress = "";
-      runningServerPassword = "";
-      runningServerCertSHA256 = "";
-      runningServerCertificate = "";
-      runningServerProcess = null;
-      this.raiseStatusUpdatedEvent();
+        // polling interval을 즉시 정리
+        if (statusPollInterval) {
+          clearInterval(statusPollInterval);
+          statusPollInterval = null;
+        }
+
+        console.log("Stopping kopia server...");
+        
+        const process = runningServerProcess;
+        
+        // 프로세스 종료 이벤트 리스너 등록
+        const onClose = () => {
+          console.log("Kopia server stopped successfully");
+          resolve();
+        };
+        
+        process.once('close', onClose);
+        
+        // SIGTERM으로 먼저 정상 종료 시도
+        process.kill('SIGTERM');
+        
+        // 5초 후에도 종료되지 않으면 강제 종료
+        setTimeout(() => {
+          if (runningServerProcess === process) {
+            console.log("Force killing kopia server...");
+            process.kill('SIGKILL');
+          }
+        }, 5000);
+
+        runningServerAddress = "";
+        runningServerPassword = "";
+        runningServerCertSHA256 = "";
+        runningServerCertificate = "";
+        runningServerProcess = null;
+        this.raiseStatusUpdatedEvent();
+      });
     },
     getServerAddress() {
       return runningServerAddress;
