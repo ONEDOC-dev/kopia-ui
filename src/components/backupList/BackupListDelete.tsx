@@ -26,7 +26,7 @@ const BackupListDelete = ({deleteList, onDelete}: BackupListDeleteProps) => {
                  actions={
                    <>
                      <Button sx={{width: '150px'}} variant={'outlined'} color={'neutral'} onClick={() => setOpen(false)}>취소</Button>
-                     <Button sx={{width: '150px'}} variant={'solid'} color={'danger'} onClick={() => {setOpen(false); onDelete();}}>석제</Button>
+                     <Button sx={{width: '150px'}} variant={'solid'} color={'danger'} onClick={() => {setOpen(false); onDelete();}}>삭제</Button>
                    </>
                  }
       />

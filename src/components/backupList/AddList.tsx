@@ -208,7 +208,10 @@ const AddList = ({onAdd}: AddListProps) => {
           e.response.data &&
           e.response.data.code === "NOT_CONNECTED"
         ) {
-          navigate("/repositoryManage");
+          alertContext?.addAlert({
+            message: '저장소가 등록되어 있지 않습니다. 관리자에게 문의해주세요.',
+            color: 'danger',
+          });
         } else {
           alertContext?.addAlert({
             message: e.message,

@@ -34,7 +34,7 @@ const snapshotDelete = ({deleteList, onDelete, totalCount}: SnapshotListDeletePr
                  actions={
                     <>
                       <Button sx={{width: '150px'}} variant={'outlined'} color={'neutral'} onClick={() => setOpen(false)}>취소</Button>
-                      <Button sx={{width: '150px'}} variant={'solid'} color={'danger'} onClick={() => {setOpen(false); onDelete(isCheck);}}>석제</Button>
+                      <Button sx={{width: '150px'}} variant={'solid'} color={'danger'} onClick={() => {setOpen(false); onDelete(isCheck);}}>삭제</Button>
                     </>
                  }
       />

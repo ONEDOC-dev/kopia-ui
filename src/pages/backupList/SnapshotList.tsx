@@ -84,7 +84,11 @@ const SnapshotList = () => {
             : {snapshotManifestIds: [value]})
         })
           .then(() => {
-            handleRefresh();
+            if (isCheck) {
+              navigate('/backupList');
+            } else {
+              handleRefresh();
+            }
           })
           .catch((error) => {
             console.log(error);

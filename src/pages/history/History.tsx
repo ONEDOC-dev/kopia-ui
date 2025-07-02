@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Box, Select, Stack, Option} from "@mui/joy";
+import {Box, Select, Stack, Option, Typography} from "@mui/joy";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import useTasks from "@/api/v1/useTasks";
 import dayjs from "dayjs";
@@ -33,7 +33,9 @@ const History = () => {
 
   const column: GridColDef[] = [
     { field: 'startTime', flex: 1, headerName: '시작 시간', valueGetter: (value) => dayjs(value).format("YYYY-MM-DD HH:mm:ss") },
-    { field: 'status', flex: 1, headerName: '상태', valueGetter: (value) => statusCodeMap[value] ?? value },
+    { field: 'status', flex: 1, headerName: '상태', valueGetter: (value) => statusCodeMap[value] ?? value, renderCell: (params) => (
+      <Stack sx={{color: params.value === 'SUCCESS' ? '#FF0000' : '#008000'}}>{params.value}</Stack>
+    ), },
     { field: 'kind', flex: 1, headerName: '유형', valueGetter: (value) => kindCodeMap[value] ?? value },
     { field: 'description', flex: 4, headerName: '설명' },
   ];

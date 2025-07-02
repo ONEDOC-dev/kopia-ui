@@ -108,7 +108,7 @@ export const useStoreSetupStore = create<StoreSetupStoreProps>((set) => {
   return {
     storage: {} as StorageConfigType,
     setStorage: (storage: StorageConfigType) => set({storage: storage}),
-    clientOptions: { description: 'ONECloud', username: '', hostname: '' } as StoreSetupClientOptionsProps,
+    clientOptions: { description: 'oneCLOUD', username: '', hostname: '' } as StoreSetupClientOptionsProps,
     setClientOptions: (options: StoreSetupClientOptionsProps) => set({clientOptions: options}),
   }
 });

@@ -202,7 +202,6 @@ export class Repository extends Component {
                     onChange={this.handleChange}
                     size="sm"
                   />
-                  &nbsp;
                   <Button
                     data-testid="update-description"
                     size="sm"
