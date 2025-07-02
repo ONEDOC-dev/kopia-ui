@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {Box, IconButton, Stack} from "@mui/joy";
+import {Box, IconButton, Stack, Tooltip, Typography} from "@mui/joy";
 import AddList from "@/components/backupList/AddList";
-import { Cached } from "@mui/icons-material";
-import {DataGrid, GridColDef, GridRowParams} from "@mui/x-data-grid";
+import { Cached, Info } from "@mui/icons-material";
+import {DataGrid, GridColDef, GridColumnHeaderParams, GridRowParams} from "@mui/x-data-grid";
 import useSource from "@/api/v1/useSource";
 import {formatBytes, padTwoDigits, formatDates} from '@/utils/utils';
 import useSnapshot from "@/api/v1/useSnapshot";
@@ -82,7 +82,14 @@ const BackupList = () => {
   }
 
   const columns: GridColDef[] = [
-    { field: 'backupDir', flex: 2, headerName: '백업 경로(원본)' },
+    { field: 'backupDir', flex: 2, renderHeader: (params: GridColumnHeaderParams) => (
+      <Stack flexDirection={'row'} gap={.5} alignItems={'center'}>
+        <Typography level={'title-sm'}>백업 경로(원본)</Typography>
+        <Tooltip title='해당 경로에 있는 자료들이 백업 됩니다.' placement='top' size='sm'>
+          <Info sx={{fontSize: '16px'}} />
+        </Tooltip>
+      </Stack>
+    ) },
     { field: 'totalVolume', flex: 1, headerName: '현재 총 용량', valueGetter: (value) => formatBytes(value) },
     { 
       field: 'backupTime', 
