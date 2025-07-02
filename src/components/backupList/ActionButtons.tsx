@@ -341,7 +341,7 @@ const SettingButton = ({
                   firstBackupPeriod: dayjs(backupTime[0], 'HH:mm'),
                   secondBackupPeriod: dayjs(backupTime[1], 'HH:mm'),
                 }} />}
-                 actions={<BackupListSettingActions />}
+                 actions={<BackupListSettingActions setOpen={setOpen} />}
                  modalSx={{width: '600px'}}
       />
     </>
