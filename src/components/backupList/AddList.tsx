@@ -25,7 +25,7 @@ interface BackupListSettingContentProps {
 }
 
 export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirDisabled}: BackupListSettingContentProps) => {
-  const {addAlert} = useAlert();
+  const alertContext = useAlert();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {control, formState: {errors}, handleSubmit, setValue, getValues} = useForm<BackupListSettingProps>({
@@ -41,7 +41,7 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
         setValue('backupDir', selectedPath);
       }
     } catch (error) {
-      addAlert({
+      alertContext?.addAlert({
         message: `디렉토리 선택 오류: ${error}}`,
         color: 'danger',
       });
@@ -92,11 +92,12 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
                 name={'firstBackupPeriod'}
                 control={control}
                 label={'첫 번째 타임'}
-                rules={{ required: true }}
+                rules={{ required: '백업 시간을 설정해 주세요' }}
                 error={!!errors.firstBackupPeriod}
+                helperText={errors.firstBackupPeriod?.message}
               >
                 {(field) => (
-                  <TimePicker views={['hours', 'minutes']} ampm={false} {...field} sx={{height: '42px'}} />
+                  <TimePicker views={['hours', 'minutes']} ampm={false} {...field} />
                 )}
               </FormField>
 
@@ -104,8 +105,9 @@ export const BackupListSettingContent = ({initValues, onHandleSubmit, backupDirD
                 name={'secondBackupPeriod'}
                 control={control}
                 label={'두 번째 타임'}
-                rules={{ required: true, validate: (value) => value === getValues('firstBackupPeriod') || true }}
+                rules={{ required: '백업 시간을 설정해 주세요', validate: (value) => value === getValues('firstBackupPeriod') || true }}
                 error={!!errors.secondBackupPeriod}
+                helperText={errors.secondBackupPeriod?.message}
               >
                 {(field) => (
                   <TimePicker views={['hours', 'minutes']} ampm={false} {...field} />
@@ -138,7 +140,7 @@ const AddList = ({onAdd}: AddListProps) => {
   const {setSource} = useSource();
   const {pathsResolve} = usePaths();
   const navigate = useNavigate();
-  const {addAlert} = useAlert();
+  const alertContext = useAlert();
 
   const snapshotNow = (data: BackupListSettingProps) => {
 
@@ -160,7 +162,7 @@ const AddList = ({onAdd}: AddListProps) => {
         setSource(request)
           .then(res => {
             if (res.snapshotted){
-              addAlert({
+              alertContext?.addAlert({
                 message: '백업 리스트가 추가되었습니다.',
                 color: 'success',
               });
@@ -169,7 +171,7 @@ const AddList = ({onAdd}: AddListProps) => {
             }
           })
           .catch((e) => {
-            addAlert({
+            alertContext?.addAlert({
               message: e.message,
               color: 'danger',
             });
@@ -184,7 +186,7 @@ const AddList = ({onAdd}: AddListProps) => {
         ) {
           navigate("/repositoryManage");
         } else {
-          addAlert({
+          alertContext?.addAlert({
             message: e.message,
             color: 'danger',
           });
