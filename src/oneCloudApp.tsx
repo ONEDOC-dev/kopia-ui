@@ -41,9 +41,33 @@ const App = () => {
   }, []);
 
   const fetchInitialRepositoryDescription = async () => {
-    const res = await getRepositoryStatus();
-    if (res) {
-      setRepositoryStatus(res)
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2초
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await getRepositoryStatus();
+        if (res) {
+          setRepositoryStatus(res);
+          return; // 성공시 함수 종료
+        }
+      } catch (error: any) {
+        console.warn(`Repository status fetch attempt ${attempt}/${maxRetries} failed:`, error);
+        
+        // ECONNREFUSED 또는 네트워크 에러인 경우에만 재시도
+        const isRetryableError = 
+          error?.code === 'ECONNREFUSED' || 
+          error?.message?.includes('ECONNREFUSED') ||
+          error?.name === 'AggregateError';
+        
+        if (isRetryableError && attempt < maxRetries) {
+          console.log(`Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        } else if (attempt === maxRetries) {
+          console.error('Failed to fetch repository status after all retries:', error);
+          // 최종 실패시에도 앱이 계속 실행되도록 함 (저장소가 설정되지 않은 상태로)
+        }
+      }
     }
   };
 
