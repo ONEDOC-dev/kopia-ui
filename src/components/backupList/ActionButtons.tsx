@@ -168,6 +168,11 @@ const RestoreButton = ({
                 color: 'danger',
               });
             })
+        } else {
+          addAlert({
+            message: '백업 데이터가 없습니다.',
+            color: 'warning',
+          });
         }
       })
       .catch(err => {
