@@ -79,7 +79,7 @@ export interface getSourceResponse {
 
 interface setSourceScheduling{
   hour: number;
-  minute: number;
+  min: number;
 }
 
 export interface setSourceRequest {

@@ -176,13 +176,12 @@ const AddList = ({onAdd}: AddListProps) => {
           policy: {
             scheduling: {
               timeOfDay: [
-                {hour: data.firstBackupPeriod!.get('hour'), minute: data.firstBackupPeriod!.get('minute')},
-                {hour: data.secondBackupPeriod!.get('hour'), minute: data.secondBackupPeriod!.get('minute')},
+                {hour: data.firstBackupPeriod!.get('hour'), min: data.firstBackupPeriod!.get('minute')},
+                {hour: data.secondBackupPeriod!.get('hour'), min: data.secondBackupPeriod!.get('minute')},
               ]
             }
           }
         }
-        console.log(request);
         setSource(request)
           .then(res => {
             if (res.snapshotted){
@@ -199,7 +198,7 @@ const AddList = ({onAdd}: AddListProps) => {
               message: e.message,
               color: 'danger',
             });
-          })
+          });
       })
       .catch(e => {
         if (
