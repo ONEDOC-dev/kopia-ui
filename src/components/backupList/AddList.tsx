@@ -157,16 +157,24 @@ export const BackupListSettingActions = ({setOpen}: {setOpen: React.Dispatch<Rea
 
 interface AddListProps {
   onAdd: () => void;
+  backupDirList: string[];
 }
 
-const AddList = ({onAdd}: AddListProps) => {
+const AddList = ({onAdd, backupDirList}: AddListProps) => {
   const [open, setOpen] = useState(false);
   const {setSource} = useSource();
   const {pathsResolve} = usePaths();
-  const navigate = useNavigate();
   const alertContext = useAlert();
 
   const snapshotNow = (data: BackupListSettingProps) => {
+
+    if (backupDirList.includes(data.backupDir)) {
+      alertContext?.addAlert({
+        message: '이미 등록된 백업 경로입니다.',
+        color: 'warning',
+      });
+      return;
+    }
 
     pathsResolve({path: data.backupDir})
       .then(() => {

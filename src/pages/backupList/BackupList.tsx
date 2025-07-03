@@ -29,7 +29,7 @@ const BackupList = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   useEffect(() => {
-    getBackupList()
+    getBackupList();
   }, []);
 
   const getBackupList = async () => {
@@ -116,7 +116,7 @@ const BackupList = () => {
           <BackupListDelete deleteList={selectList} onDelete={handleSnapshotDelete} />
         </Stack>
         <Stack flexDirection={'row'} gap={1}>
-          <AddList onAdd={getBackupList} />
+          <AddList onAdd={getBackupList} backupDirList={backupList.map(item => item.backupDir)} />
           <IconButton loading={isLoading} sx={{backgroundColor: '#3D76FE', '&:hover': {backgroundColor: '#5E8DFF'}}} onClick={() => getBackupList()}><Cached htmlColor={'#FFF'} /></IconButton>
         </Stack>
       </Stack>
