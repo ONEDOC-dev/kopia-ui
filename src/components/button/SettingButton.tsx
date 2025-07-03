@@ -2,7 +2,6 @@ import React from 'react';
 import {Dropdown, IconButton, Menu, MenuButton, MenuItem} from "@mui/joy";
 import {SettingsOutlined} from "@mui/icons-material";
 import { keycloak } from '@/config/keycloak.config';
-// import {keycloak} from "@/config/keycloak.config";
 
 const SettingButton = () => {
 

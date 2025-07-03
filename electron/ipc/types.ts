@@ -29,8 +29,6 @@ export interface PreloadElectronAPI extends ElectronAPI {
 }
 
 export interface ElectronAPI {
-  getAuthTokens: () => Promise<{ access_token: string | null; refresh_token: string | null }>;
-  storeAuthTokens: (tokenResponse: TokenResponse) => Promise<void>;
   refreshToken: () => Promise<TokenResponse>;
   apiRequest: (config: AxiosRequestConfig) => Promise<any>;
   selectDirectory: () => Promise<string | null>;

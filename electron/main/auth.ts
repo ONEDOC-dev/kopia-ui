@@ -1,6 +1,6 @@
 import https from 'https';
 import { TokenResponse, KeycloakConfig } from '../ipc/types';
-import { keycloakConfig } from '../config/keycloak';
+import { keycloakConfig } from '../../src/config/keycloak.config';
 
 class AuthService {
   private config: KeycloakConfig;
@@ -40,7 +40,7 @@ class AuthService {
     const params = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: this.config.clientId,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     });
 
     return this.makeTokenRequest(tokenUrl, params);

@@ -48,7 +48,7 @@ class ElectronApp {
       this.createWindows();
       this.createAuthWindow();
       this.setupAppInfo();
-    this.setupAppEvents();
+      this.setupAppEvents();
       await this.loadAllKeycloakCallbackData();
   
       if (this.isOutsideOfApplicationsFolderOnMac()) {

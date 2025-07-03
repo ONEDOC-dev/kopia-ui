@@ -16,10 +16,7 @@ export class IpcHandler implements IpcElectronAPI {
   }
 
   public setupIPC(): void {
-    ipcMain.handle('get-auth-tokens', this.getAuthTokens.bind(this));
     ipcMain.handle('refresh-token', this.refreshToken.bind(this));
-    ipcMain.handle('store-auth-tokens',
-      (_event, tokenResponse: TokenResponse) => this.storeAuthTokens.bind(tokenResponse));
     ipcMain.handle('auth-start', this.startAuth.bind(this));
     ipcMain.handle('api-request', (_, config: AxiosRequestConfig) => this.apiRequest(config));
     ipcMain.handle('select-directory', () => this.selectDirectory());
@@ -69,18 +66,7 @@ export class IpcHandler implements IpcElectronAPI {
       mainWindow?.webContents.send('auth-error', "");
     }
   }
-  
-  public async getAuthTokens(): Promise<{ access_token: string | null; refresh_token: string | null }> {
-    return {
-      access_token: this.store.get('access_token') as string | null,
-      refresh_token: this.store.get('refresh_token') as string | null
-    };
-  }
-  
-  public async storeAuthTokens(tokenResponse: TokenResponse): Promise<void> {
-    this.updateTokens(tokenResponse);
-  }
-  
+
   public async refreshToken(): Promise<TokenResponse> {
     const refreshTokenValue = this.store.get('refresh_token') as string | undefined;
     if (!refreshTokenValue) {

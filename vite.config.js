@@ -27,13 +27,6 @@ export default defineConfig(() => {
             changeOrigin: true,
             secure: false,
           },
-          'keycloak-api': {
-            target: 'https://auth.onedoc.kr',
-            rewrite: (path) => path.replace(/^\/keycloak-api/, '/admin'),
-            changeOrigin: true,
-            secure: false,
-            ws: true
-          }
         },
     },
     resolve: {
