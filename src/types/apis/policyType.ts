@@ -1,3 +1,9 @@
+export interface GetPolicyRequest {
+  userName: string;
+  host: string;
+  path: string;
+}
+
 export interface UpdatePolicyReqeust {
   body: {
     scheduling: {

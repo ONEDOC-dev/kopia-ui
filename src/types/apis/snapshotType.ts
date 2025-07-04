@@ -20,6 +20,7 @@ export interface getSnapshotResponse {
     description: string;
     startTime: string;
     endTime: string;
+    incomplete?: string; // 불완전한 스냅샷 이유
     summary: {
       size: number;
       files: number;
@@ -29,9 +30,9 @@ export interface getSnapshotResponse {
       numFailed: number;
     },
     rootID: string;
-    retention: string[],
-    pins: any[]
+    retention: string[], // 보존 정책 목록
+    pins: any[] // 고정된 핀 목록
   }[],
-  unfilteredCount: number;
-  uniqueCount: number;
+  unfilteredCount: number; // 전체 스냅샷 갯수
+  uniqueCount: number; // 고유 스냅샷 갯수
 }

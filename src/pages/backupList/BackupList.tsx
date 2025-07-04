@@ -106,7 +106,7 @@ const BackupList = () => {
       }
     },
     { field: 'lastBackupTime', flex: 1, headerName: '마지막 백업', valueGetter: (value) => formatDates(value) },
-    { field: 'actions', flex: 2, headerName: '액션', renderCell: (params) => (<ActionButtons params={params} onFresh={getBackupList} />)},
+    { field: 'actions', flex: 2, headerName: '액션', renderCell: (params) => (<ActionButtons params={params} onRefresh={getBackupList} />)},
   ];
 
   return (

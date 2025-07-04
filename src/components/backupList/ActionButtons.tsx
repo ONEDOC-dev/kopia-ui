@@ -17,7 +17,7 @@ import {
 import dayjs from "dayjs";
 import usePolicy from "@/api/v1/usePolicy";
 import {useAlert} from "@/contexts/ContextAlert";
-import { FolderOpen } from "@mui/icons-material";
+import { FolderOpen, Tune } from "@mui/icons-material";
 
 interface ActionButtonCommonProps {
   userName: string;
@@ -27,13 +27,18 @@ interface ActionButtonCommonProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+interface BackupButton extends ActionButtonCommonProps {
+  onRefresh: () => void;
+}
+
 const BackupButton = ({
   userName,
   host,
   path,
   isLoading,
   setIsLoading,
-}: ActionButtonCommonProps) => {
+  onRefresh
+}: BackupButton) => {
   const {uploadSource, getSources} = useSource();
   const [cashedBytes, setCashedBytes] = useState<number>(0);
   const [hashedBytes, setHashedBytes] = useState<number>(0);
@@ -47,8 +52,8 @@ const BackupButton = ({
       host: host,
       path: path,
     })
-      .then(() => {
-        checkBackupStatus(path);
+      .then(async() => {
+        await checkBackupStatus(path, onRefresh);
       })
       .catch(err => {
         console.log(err);
@@ -56,7 +61,7 @@ const BackupButton = ({
       });
   }
 
-  const checkBackupStatus = async (uploadPath: string) => {
+  const checkBackupStatus = async (uploadPath: string, refreshCallback: () => void) => {
     await getSources()
       .then(res => {
         const backupStatus = res.sources.find(item => item.source.path === uploadPath);
@@ -64,9 +69,10 @@ const BackupButton = ({
           setCashedBytes(backupStatus.upload.cachedBytes);
           setHashedBytes(backupStatus.upload.hashedBytes);
           if (estimatedBytes === 0) setEstimatedBytes(backupStatus.upload.estimatedBytes);
-          setTimeout(() => checkBackupStatus(uploadPath), 1000);
+          setTimeout(() => checkBackupStatus(uploadPath, refreshCallback), 1000);
         } else {
           setIsLoading(false);
+          refreshCallback(); // 백업 완료 후 새로고침
         }
       });
   }
@@ -117,7 +123,7 @@ const RestoreButton = ({
       .then(async (res) => {
         if (res.snapshots.length > 0) {
           await restore({
-            root: res.snapshots[0].id,
+            root: res.snapshots[res.snapshots.length - 1].id,
             options: {
               incremental: true,
               ignoreErrors: false,
@@ -126,13 +132,13 @@ const RestoreButton = ({
             },
             fsOutput: {
               targetPath: getValues('restoreDir'),
-              skipOwners: false,
-              skipPermissions: false,
-              skipTimes: false,
-              ignorePermissionErrors: true,
+              skipOwners: true,
+              skipPermissions: true,
+              skipTimes: true,
               overwriteFiles: false,
               overwriteDirectories: false,
               overwriteSymlinks: false,
+              ignorePermissionErrors: true,
               writeFilesAtomically: false,
               writeSparseFiles: false
             }
@@ -274,7 +280,7 @@ const RestoreButton = ({
 
 interface SettingButton extends ActionButtonCommonProps {
   backupTime: string[];
-  onFresh: () => void;
+  onRefresh: () => void;
 }
 
 const SettingButton = ({
@@ -284,7 +290,7 @@ const SettingButton = ({
   isLoading,
   setIsLoading,
   backupTime,
-  onFresh
+  onRefresh
 }: SettingButton) => {
   const {updatePolicy} = usePolicy();
   const [open, setOpen] = useState<boolean>(false);
@@ -313,7 +319,7 @@ const SettingButton = ({
           color: 'success'
         });
         setOpen(false);
-        onFresh();
+        onRefresh();
       })
       .catch(err => {
         console.log(err);
@@ -355,10 +361,10 @@ const SettingButton = ({
 
 export interface ActionButtonsProps {
   params: GridRenderCellParams;
-  onFresh: () => void;
+  onRefresh: () => void;
 }
 
-const ActionButtons = ({params, onFresh}: ActionButtonsProps) => {
+const ActionButtons = ({params, onRefresh}: ActionButtonsProps) => {
   const {repositoryStatus} = useRepositoryStatusStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -377,7 +383,7 @@ const ActionButtons = ({params, onFresh}: ActionButtonsProps) => {
         isLoading={isLoading}
         setIsLoading={setIsLoading}
         backupTime={params.row.backupTime}
-        onFresh={onFresh}
+        onRefresh={onRefresh}
       />
       <BackupButton
         userName={repositoryStatus.username!}
@@ -385,6 +391,7 @@ const ActionButtons = ({params, onFresh}: ActionButtonsProps) => {
         path={params.id as string}
         isLoading={isLoading}
         setIsLoading={setIsLoading}
+        onRefresh={onRefresh}
       />
       <RestoreButton
         userName={repositoryStatus.username!}
