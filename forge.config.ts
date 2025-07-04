@@ -17,8 +17,6 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       name: 'oneCLOUD',
-      setupExe: '${productName}-${version}-setup.exe',
-      setupIcon: 'public/oneCLOUD.ico',
       description: 'oneCLOUD - Cloud Backup and Storage Solution',
       authors: 'oneDOC',
       version: '${version}',
