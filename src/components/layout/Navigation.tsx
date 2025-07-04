@@ -18,7 +18,6 @@ const Navigation = () => {
   ]
 
   useEffect(() => {
-    console.log(keycloak.tokenParsed);
     if (initialized && keycloak && keycloak.tokenParsed
       && keycloak.tokenParsed.realm_access && keycloak.tokenParsed.realm_access.roles){
       setIsAdmin(keycloak.tokenParsed.realm_access.roles.includes('admin'))

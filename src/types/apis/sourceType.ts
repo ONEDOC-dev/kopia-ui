@@ -89,6 +89,7 @@ export interface setSourceRequest {
     scheduling: {
       timeOfDay: setSourceScheduling[]
     },
+    noParent: boolean;
   }
 }
 

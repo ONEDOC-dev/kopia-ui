@@ -10,7 +10,6 @@ export const useElectronAuth = () => {
   useEffect(() => {
     const authStart = async () => {
       const res = await window.electron.authStart();
-      console.log(res);
     }
     if (isElectron) {
       setIsAuthenticated(false);

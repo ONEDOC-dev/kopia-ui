@@ -187,7 +187,8 @@ const AddList = ({onAdd, backupDirList}: AddListProps) => {
                 {hour: data.firstBackupPeriod!.get('hour'), min: data.firstBackupPeriod!.get('minute')},
                 {hour: data.secondBackupPeriod!.get('hour'), min: data.secondBackupPeriod!.get('minute')},
               ]
-            }
+            },
+            noParent: true
           }
         }
         setSource(request)
